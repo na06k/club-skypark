@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUB SKYPARK | Luxury Hotel & Resort – Neemuch</title>
+    <link rel="icon" href="data:,">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --gold: #C9A96E;
+            --gold-dark: #B08A4D;
+            --ivory: #F8F5F0;
+            --white: #ffffff;
+            --black: #1A1A1A;
+            --black-rich: #0D0D0D;
+            --text-dark: #2C2C2C;
+            --text-muted: #6B6B6B;
+            --shadow-lg: 0 25px 60px rgba(0,0,0,0.12);
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { font-family:var(--font-body); color:var(--text-dark); background:var(--ivory); line-height:1.7; overflow-x:hidden; }
+        h1,h2,h3,h4 { font-family:var(--font-heading); font-weight:700; }
+        a { text-decoration:none; color:inherit; }
+
+        /* NAVBAR – no hamburger */
+        .navbar { position:fixed; width:100%; z-index:1000; padding:1rem 0; transition:0.4s; background:rgba(13,13,13,0.92); backdrop-filter:blur(20px); }
+        .navbar.scrolled { padding:0.6rem 0; box-shadow:0 5px 30px rgba(0,0,0,0.3); }
+        .nav-inner { max-width:1300px; margin:0 auto; padding:0 2rem; display:flex; align-items:center; justify-content:space-between; }
+        .logo { font-family:var(--font-heading); font-size:1.8rem; font-weight:800; color:var(--white); letter-spacing:2px; }
+        .logo span { color:var(--gold); }
+        .nav-links { display:flex; align-items:center; gap:1.5rem; list-style:none; flex-wrap:wrap; }
+        .nav-links a { color:rgba(255,255,255,0.9); font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; transition:0.3s; white-space:nowrap; }
+        .nav-links a:hover { color:var(--gold); }
+        .btn-book { background:var(--gold); color:var(--black) !important; padding:0.5rem 1.5rem !important; border-radius:50px !important; font-weight:700 !important; }
+        .btn-book:hover { background:var(--gold-dark); transform:translateY(-2px); box-shadow:0 10px 25px rgba(201,169,110,0.4); }
+
+        /* HERO */
+        .hero { position:relative; height:100vh; min-height:700px; overflow:hidden; }
+        .hero-slide { position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transition:opacity 1.5s; }
+        .hero-slide.active { opacity:1; }
+        .hero-overlay { position:absolute; inset:0; background:linear-gradient(0deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%); }
+        .hero-content { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; color:var(--white); z-index:2; width:90%; }
+        .hero-content h2 { font-size:clamp(2.8rem, 5vw, 4.5rem); font-weight:800; line-height:1.2; margin-bottom:0.5rem; }
+        .hero-content h2 span { color:var(--gold); }
+        .hero-content .sub { font-size:clamp(1.2rem, 2vw, 1.8rem); letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem; }
+        .hero-content .tagline { font-size:1.1rem; color:var(--gold); margin-bottom:2.5rem; letter-spacing:2px; text-transform:uppercase; }
+        .hero-btn { display:inline-block; background:var(--gold); color:var(--black-rich); padding:1rem 2.5rem; border-radius:50px; font-weight:700; text-transform:uppercase; letter-spacing:1px; transition:0.4s; box-shadow:0 15px 35px rgba(201,169,110,0.35); }
+        .hero-btn:hover { background:var(--gold-dark); transform:translateY(-5px); }
+        .slider-dots { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); display:flex; gap:12px; z-index:3; }
+        .slider-dots button { width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.5); border:none; cursor:pointer; transition:0.4s; }
+        .slider-dots button.active { background:var(--gold); width:30px; border-radius:20px; }
+
+        /* SECTIONS */
+        .section { padding:5rem 0; }
+        .container { max-width:1280px; margin:0 auto; padding:0 2rem; }
+        .section-title { text-align:center; font-size:clamp(2.2rem, 4vw, 3.2rem); margin-bottom:1rem; color:var(--black-rich); }
+        .section-subtitle { text-align:center; color:var(--text-muted); max-width:600px; margin:0 auto 3rem; font-size:1.05rem; }
+        .gold-line { width:70px; height:3px; background:var(--gold); margin:0.5rem auto 1.5rem; }
+
+        /* ABOUT */
+        .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+        .about-text h2 { font-size:2.8rem; margin-bottom:1.5rem; }
+        .about-text p { color:var(--text-muted); font-size:1.05rem; line-height:1.8; }
+        .about-img { width:100%; height:450px; object-fit:cover; border-radius:12px; box-shadow:var(--shadow-lg); transition:0.5s; }
+        .about-img:hover { transform:scale(1.02); }
+
+        /* AMENITIES */
+        .amenities-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:2rem; }
+        .amenity-card { background:var(--white); padding:2.5rem 2rem; border-radius:16px; text-align:center; box-shadow:0 15px 35px rgba(0,0,0,0.06); transition:0.4s; backdrop-filter:blur(10px); background:rgba(255,255,255,0.75); border:1px solid rgba(255,255,255,0.5); }
+        .amenity-card:hover { transform:translateY(-10px); box-shadow:0 25px 50px rgba(0,0,0,0.12); }
+        .amenity-icon { font-size:2.5rem; color:var(--gold); margin-bottom:1.2rem; }
+        .amenity-card h3 { font-size:1.4rem; margin-bottom:0.8rem; }
+        .amenity-card p { color:var(--text-muted); font-size:0.95rem; }
+
+        /* ROOMS */
+        .rooms-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:2.5rem; }
+        .room-card { background:var(--white); border-radius:16px; overflow:hidden; box-shadow:0 15px 30px rgba(0,0,0,0.06); transition:0.4s; }
+        .room-card:hover { transform:translateY(-8px); box-shadow:0 30px 60px rgba(0,0,0,0.12); }
+        .room-img { height:280px; overflow:hidden; }
+        .room-img img { width:100%; height:100%; object-fit:cover; transition:0.7s; }
+        .room-card:hover .room-img img { transform:scale(1.07); }
+        .room-details { padding:1.8rem; }
+        .room-details h3 { font-size:1.5rem; margin-bottom:0.5rem; }
+        .room-price { color:var(--gold-dark); font-size:1.4rem; font-weight:700; margin-bottom:1rem; }
+        .room-details .btn-sm { display:inline-block; padding:0.5rem 1.8rem; border:2px solid var(--gold); color:var(--gold-dark); border-radius:50px; font-weight:600; transition:0.3s; }
+        .room-details .btn-sm:hover { background:var(--gold); color:#fff; }
+
+        /* BOOKING FORM */
+        .booking-form { max-width:700px; margin:0 auto; background:var(--white); padding:2.5rem; border-radius:20px; box-shadow:var(--shadow-lg); }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+        .form-group { display:flex; flex-direction:column; gap:0.4rem; }
+        .form-group label { font-weight:600; font-size:0.9rem; }
+        .form-group input, .form-group select { padding:0.8rem 1rem; border:1.5px solid #ddd; border-radius:8px; font-family:var(--font-body); }
+        .btn-block { width:100%; padding:1rem; background:var(--gold); border:none; border-radius:50px; font-weight:700; font-size:1rem; cursor:pointer; transition:0.3s; }
+        .btn-block:hover { background:var(--gold-dark); }
+        .confirmation { display:none; text-align:center; padding:2rem; }
+        .confirmation h3 { color:var(--gold); margin-bottom:1rem; }
+
+        /* GALLERY */
+        .gallery-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:1.2rem; }
+        .gallery-grid img { width:100%; height:280px; object-fit:cover; border-radius:8px; transition:0.4s; }
+        .gallery-grid img:hover { transform:scale(1.05); box-shadow:0 20px 40px rgba(0,0,0,0.2); }
+
+        /* TESTIMONIALS */
+        .testimonials-wrapper { position:relative; overflow:hidden; max-width:900px; margin:0 auto; }
+        .testimonial-track { display:flex; transition:transform 0.6s; }
+        .testimonial-card { min-width:100%; box-sizing:border-box; padding:2rem; background:var(--white); border-radius:20px; box-shadow:0 20px 40px rgba(0,0,0,0.05); text-align:center; }
+        .stars { color:var(--gold); font-size:1.2rem; margin-bottom:1rem; }
+        .testimonial-text { font-size:1.2rem; font-style:italic; color:var(--text-dark); margin-bottom:1.5rem; line-height:1.8; }
+        .author { font-weight:700; }
+        .author small { display:block; font-weight:400; color:var(--text-muted); }
+
+        /* CONTACT */
+        .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start; }
+        .contact-info p { margin-bottom:0.8rem; font-size:1rem; }
+        .map-embed { width:100%; height:350px; border:none; border-radius:16px; box-shadow:0 15px 35px rgba(0,0,0,0.1); }
+        .social-links { display:flex; gap:1rem; margin-top:1.5rem; }
+        .social-links a { display:inline-flex; align-items:center; justify-content:center; width:45px; height:45px; border-radius:50%; background:rgba(0,0,0,0.05); transition:0.3s; font-size:1.2rem; color:var(--text-dark); }
+        .social-links a:hover { background:var(--gold); color:#fff; transform:translateY(-3px); }
+
+        /* WHATSAPP */
+        .whatsapp-float { position:fixed; bottom:25px; right:25px; width:60px; height:60px; background:#25D366; color:#fff; border-radius:50%; text-align:center; line-height:60px; font-size:28px; box-shadow:0 10px 25px rgba(37,211,102,0.4); z-index:999; transition:0.3s; }
+        .whatsapp-float:hover { transform:scale(1.1); }
+
+        /* FOOTER */
+        .footer { background:var(--black-rich); color:rgba(255,255,255,0.75); padding:4rem 0 2rem; }
+        .footer-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:2rem; }
+        .footer h4 { color:var(--gold); margin-bottom:1.2rem; }
+        .footer a { color:rgba(255,255,255,0.7); display:block; margin-bottom:0.5rem; transition:0.3s; }
+        .footer a:hover { color:var(--gold); padding-left:4px; }
+        .copyright { border-top:1px solid rgba(255,255,255,0.1); margin-top:2.5rem; padding-top:1.5rem; text-align:center; font-size:0.9rem; }
+
+        @media (max-width: 992px) {
+            .about-grid, .contact-grid { grid-template-columns:1fr; }
+            .form-row { grid-template-columns:1fr; }
+        }
+        @media (max-width: 768px) {
+            .nav-links { gap:0.8rem; }
+            .nav-links a { font-size:0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+    <div class="nav-inner">
+        <a href="#" class="logo">CLUB<span>SKYPARK</span></a>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#amenities">Amenities</a></li>
+            <li><a href="#rooms">Rooms</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#reviews">Reviews</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#book" class="btn-book">Book Now</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section id="home" class="hero">
+    <div class="hero-slide active" style="background-image: url('images/hero1.jpg');"></div>
+    <div class="hero-slide" style="background-image: url('images/hero2.jpg');"></div>
+    <div class="hero-slide" style="background-image: url('images/hero3.jpg');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h2>CLUB SKYPARK</h2>
+        <div class="sub">HOTEL & RESORT</div>
+        <div class="tagline">WHERE LUXURY MEETS SERENITY!</div>
+        <a href="#book" class="hero-btn">Reserve Your Stay</a>
+    </div>
+    <div class="slider-dots" id="sliderDots"></div>
+</section>
+
+<section id="about" class="section">
+    <div class="container about-grid">
+        <div class="about-text"><h2>Welcome to CLUB SKYPARK</h2><p>Nestled on Manasa Road, Neemuch, our resort is a sanctuary of refined luxury. From the moment you arrive, you are enveloped in the warmth of Indian hospitality interwoven with contemporary sophistication.</p></div>
+        <img src="images/about.jpg" alt="About" class="about-img">
+    </div>
+</section>
+
+<section id="amenities" class="section" style="background: var(--ivory);">
+    <div class="container">
+        <div class="gold-line"></div><h2 class="section-title">Exquisite Amenities</h2>
+        <div class="amenities-grid">
+            <div class="amenity-card"><i class="fas fa-dumbbell amenity-icon"></i><h3>Fully Equipped Gym</h3><p>State‑of‑the‑art fitness centre with personal trainers available.</p></div>
+            <div class="amenity-card"><i class="fas fa-swimmer amenity-icon"></i><h3>Swimming Pool</h3><p>Infinity pool with panoramic views and poolside service.</p></div>
+            <div class="amenity-card"><i class="fas fa-glass-cheers amenity-icon"></i><h3>3 Banquet Halls</h3><p>Elegant venues perfect for weddings, receptions, and celebrations.</p></div>
+            <div class="amenity-card"><i class="fas fa-music amenity-icon"></i><h3>DJ Hall</h3><p>Sound‑proofed DJ party hall with professional lighting and sound system.</p></div>
+            <div class="amenity-card"><i class="fas fa-briefcase amenity-icon"></i><h3>Conference Hall</h3><p>Fully equipped corporate conference room for meetings and seminars.</p></div>
+        </div>
+    </div>
+</section>
+
+<section id="rooms" class="section">
+    <div class="container">
+        <div class="gold-line"></div><h2 class="section-title">Signature Rooms</h2>
+        <div class="rooms-grid">
+            <div class="room-card"><div class="room-img"><img src="images/presidential.jpg" alt=""></div><div class="room-details"><h3>Presidential Suite</h3><div class="room-price">₹7,499/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/executive.jpg" alt=""></div><div class="room-details"><h3>Executive Suite</h3><div class="room-price">₹5,499/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/family.jpg" alt=""></div><div class="room-details"><h3>Family Suite</h3><div class="room-price">₹5,499/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/club-family.jpg" alt=""></div><div class="room-details"><h3>Club Family Room</h3><div class="room-price">₹4,999/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/platinum.jpg" alt=""></div><div class="room-details"><h3>Platinum Room</h3><div class="room-price">₹2,999/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/premium.jpg" alt=""></div><div class="room-details"><h3>Premium Room</h3><div class="room-price">₹2,499/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- BOOKING SECTION WITH BACKEND INTEGRATION -->
+<section id="book" class="section" style="background: var(--ivory);">
+    <div class="container">
+        <div class="gold-line"></div><h2 class="section-title">Book Your Stay</h2>
+        <form id="bookingForm" class="booking-form">
+            <div class="form-row">
+                <div class="form-group"><label>Full Name</label><input type="text" id="guestName" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="guestEmail" required></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Phone</label><input type="tel" id="guestPhone" required></div>
+                <div class="form-group"><label>Room</label>
+                    <select id="roomSelect" required>
+                        <option value="">Select Room</option>
+                        <option value="Presidential Suite" data-price="7499">Presidential Suite – ₹7,499/night</option>
+                        <option value="Executive Suite" data-price="5499">Executive Suite – ₹5,499/night</option>
+                        <option value="Family Suite" data-price="5499">Family Suite – ₹5,499/night</option>
+                        <option value="Club Family Room" data-price="4999">Club Family Room – ₹4,999/night</option>
+                        <option value="Platinum Room" data-price="2999">Platinum Room – ₹2,999/night</option>
+                        <option value="Premium Room" data-price="2499">Premium Room – ₹2,499/night</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Check‑In</label><input type="date" id="checkIn" required></div>
+                <div class="form-group"><label>Check‑Out</label><input type="date" id="checkOut" required></div>
+            </div>
+            <div style="text-align:center; font-size:1.5rem; font-weight:700; margin:1.5rem 0;">Total: <span id="totalPrice" style="color:var(--gold);">₹0</span></div>
+            <button type="submit" class="btn-block">Confirm Reservation</button>
+        </form>
+        <div id="confirmation" class="confirmation">
+            <h3>Reservation Confirmed!</h3>
+            <p id="confirmationMsg"></p>
+        </div>
+    </div>
+</section>
+
+<section id="gallery" class="section">
+    <div class="container">
+        <div class="gold-line"></div><h2 class="section-title">Photo Gallery</h2>
+        <div class="gallery-grid">
+            <img src="images/gallery1.jpg"><img src="images/gallery2.jpg"><img src="images/gallery3.jpg"><img src="images/gallery4.jpg">
+        </div>
+    </div>
+</section>
+
+<section id="reviews" class="section" style="background: var(--ivory);">
+    <div class="container">
+        <div class="gold-line"></div><h2 class="section-title">Guest Love</h2>
+        <div class="testimonials-wrapper"><div class="testimonial-track" id="testimonialTrack">
+            <div class="testimonial-card"><div class="stars">★★★★★</div><p class="testimonial-text">"An absolutely magnificent stay. The attention to detail, the warmth of the staff, and the breathtaking views made it unforgettable."</p><div class="author">Priya & Arjun Mehta<small>Mumbai</small></div></div>
+            <div class="testimonial-card"><div class="stars">★★★★★</div><p class="testimonial-text">"CLUB SKYPARK redefines luxury. From the infinity pool to the exquisite dining, every moment felt curated."</p><div class="author">James & Sarah Chen<small>Singapore</small></div></div>
+            <div class="testimonial-card"><div class="stars">★★★★★</div><p class="testimonial-text">"The Presidential Suite was out of this world. Butler service, panoramic views – worth every rupee."</p><div class="author">Vikram Rao<small>Bengaluru</small></div></div>
+        </div></div>
+    </div>
+</section>
+
+<section id="contact" class="section">
+    <div class="container">
+        <div class="gold-line"></div><h2 class="section-title">Reach Us</h2>
+        <div class="contact-grid">
+            <div class="contact-info">
+                <h3>CLUB SKYPARK</h3>
+                <p><i class="fas fa-map-marker-alt" style="color:var(--gold); margin-right:8px;"></i> Manasa Road, Neemuch, MP 458441, India</p>
+                <p><i class="fas fa-phone" style="color:var(--gold); margin-right:8px;"></i> <a href="tel:+918827623267">+91 88276 23267</a></p>
+                <p><i class="fas fa-envelope" style="color:var(--gold); margin-right:8px;"></i> clubskyparkhotel@gmail.com</p>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/club_skypark_neemuch" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+            <iframe class="map-embed" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3646.715341395443!2d74.7899999!3d24.4666667!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDI4JzAwLjAiTiA3NMKwNDcnMjQuMCJF!5e0!3m2!1sen!2sin!4v1600000000000" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div><h4>CLUB SKYPARK</h4><p>A luxury resort where every moment becomes a cherished memory.</p></div>
+            <div><h4>Quick Links</h4><a href="#home">Home</a><a href="#about">About</a><a href="#rooms">Rooms</a><a href="#book">Book Now</a></div>
+            <div><h4>Contact</h4><p>Manasa Road, Neemuch</p><p>+91 88276 23267</p><p>clubskyparkhotel@gmail.com</p></div>
+        </div>
+        <div class="copyright">&copy; 2026 CLUB SKYPARK. All rights reserved.</div>
+    </div>
+</footer>
+
+<a href="https://wa.me/918827623267?text=Hello%20CLUB%20SKYPARK%2C%20I%20want%20to%20book%20a%20room.%20(Directed%20from%20the%20website)" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+
+<script>
+const API = 'http://localhost:5000/api';
+
+// Hero slider
+const slides = document.querySelectorAll('.hero-slide');
+const dotsContainer = document.getElementById('sliderDots');
+let current = 0;
+for (let i = 0; i < slides.length; i++) {
+    const dot = document.createElement('button');
+    dot.addEventListener('click', () => goToSlide(i));
+    dotsContainer.appendChild(dot);
+}
+const dots = document.querySelectorAll('.slider-dots button');
+function goToSlide(i) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (i + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+}
+setInterval(() => goToSlide(current + 1), 5000);
+goToSlide(0);
+
+// Testimonials slider
+const track = document.getElementById('testimonialTrack');
+const cards = document.querySelectorAll('.testimonial-card');
+let tIdx = 0;
+setInterval(() => {
+    tIdx = (tIdx + 1) % cards.length;
+    track.style.transform = `translateX(-${tIdx * 100}%)`;
+}, 5000);
+
+// Price calculation
+const roomSelect = document.getElementById('roomSelect');
+const checkIn = document.getElementById('checkIn');
+const checkOut = document.getElementById('checkOut');
+function updatePrice() {
+    const opt = roomSelect.selectedOptions[0];
+    if (!opt || !checkIn.value || !checkOut.value) return;
+    const price = parseInt(opt.dataset.price);
+    const nights = Math.max(1, (new Date(checkOut.value) - new Date(checkIn.value)) / 86400000);
+    document.getElementById('totalPrice').textContent = '₹' + (price * nights).toLocaleString();
+}
+roomSelect.addEventListener('change', updatePrice);
+checkIn.addEventListener('change', updatePrice);
+checkOut.addEventListener('change', updatePrice);
+
+// Booking submit to backend
+document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const opt = roomSelect.selectedOptions[0];
+    const booking = {
+        guestName: document.getElementById('guestName').value,
+        guestEmail: document.getElementById('guestEmail').value,
+        guestPhone: document.getElementById('guestPhone').value,
+        roomName: opt.text.split(' –')[0],
+        checkIn: checkIn.value,
+        checkOut: checkOut.value,
+        totalPrice: parseFloat(document.getElementById('totalPrice').textContent.replace('₹','').replace(/,/g,''))
+    };
+    try {
+        const res = await fetch(`${API}/bookings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(booking)
+        });
+        const result = await res.json();
+        document.getElementById('bookingForm').style.display = 'none';
+        document.getElementById('confirmation').style.display = 'block';
+        document.getElementById('confirmationMsg').innerHTML = `Thank you, ${booking.guestName}!<br>Your booking for ${booking.roomName} is confirmed.<br>Total: ₹${booking.totalPrice.toLocaleString()}<br>Confirmation: ${result.confirmation || 'N/A'}`;
+    } catch (err) {
+        alert('Booking failed. Please try again.');
+    }
+});
+
+// Smooth links
+document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+}));
+</script>
+</body>
+</html>
