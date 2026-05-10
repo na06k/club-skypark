@@ -9,7 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -31,9 +30,8 @@
         h1,h2,h3,h4 { font-family:var(--font-heading); font-weight:700; }
         a { text-decoration:none; color:inherit; }
 
-        /* NAVBAR – no hamburger */
-        .navbar { position:fixed; width:100%; z-index:1000; padding:1rem 0; transition:0.4s; background:rgba(13,13,13,0.92); backdrop-filter:blur(20px); }
-        .navbar.scrolled { padding:0.6rem 0; box-shadow:0 5px 30px rgba(0,0,0,0.3); }
+        /* NAVBAR */
+        .navbar { position:fixed; width:100%; z-index:1000; padding:1rem 0; background:rgba(13,13,13,0.92); backdrop-filter:blur(20px); }
         .nav-inner { max-width:1300px; margin:0 auto; padding:0 2rem; display:flex; align-items:center; justify-content:space-between; }
         .logo { font-family:var(--font-heading); font-size:1.8rem; font-weight:800; color:var(--white); letter-spacing:2px; }
         .logo span { color:var(--gold); }
@@ -41,7 +39,7 @@
         .nav-links a { color:rgba(255,255,255,0.9); font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; transition:0.3s; white-space:nowrap; }
         .nav-links a:hover { color:var(--gold); }
         .btn-book { background:var(--gold); color:var(--black) !important; padding:0.5rem 1.5rem !important; border-radius:50px !important; font-weight:700 !important; }
-        .btn-book:hover { background:var(--gold-dark); transform:translateY(-2px); box-shadow:0 10px 25px rgba(201,169,110,0.4); }
+        .btn-book:hover { background:var(--gold-dark); transform:translateY(-2px); }
 
         /* HERO */
         .hero { position:relative; height:100vh; min-height:700px; overflow:hidden; }
@@ -49,10 +47,10 @@
         .hero-slide.active { opacity:1; }
         .hero-overlay { position:absolute; inset:0; background:linear-gradient(0deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%); }
         .hero-content { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; color:var(--white); z-index:2; width:90%; }
-        .hero-content h2 { font-size:clamp(2.8rem, 5vw, 4.5rem); font-weight:800; line-height:1.2; margin-bottom:0.5rem; }
-        .hero-content h2 span { color:var(--gold); }
-        .hero-content .sub { font-size:clamp(1.2rem, 2vw, 1.8rem); letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem; }
-        .hero-content .tagline { font-size:1.1rem; color:var(--gold); margin-bottom:2.5rem; letter-spacing:2px; text-transform:uppercase; }
+        /* Hero text now without golden box */
+        .hero-content h2 { font-size:clamp(2.5rem, 5vw, 4.5rem); font-weight:800; line-height:1.2; color:var(--gold); margin-bottom:0.3rem; text-shadow:0 4px 20px rgba(0,0,0,0.5); }
+        .hero-content .sub { font-size:clamp(1.2rem, 2.5vw, 2rem); letter-spacing:5px; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem; text-shadow:0 2px 10px rgba(0,0,0,0.5); }
+        .hero-content .tagline { font-size:1.1rem; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:2.5rem; text-shadow:0 2px 10px rgba(0,0,0,0.5); }
         .hero-btn { display:inline-block; background:var(--gold); color:var(--black-rich); padding:1rem 2.5rem; border-radius:50px; font-weight:700; text-transform:uppercase; letter-spacing:1px; transition:0.4s; box-shadow:0 15px 35px rgba(201,169,110,0.35); }
         .hero-btn:hover { background:var(--gold-dark); transform:translateY(-5px); }
         .slider-dots { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); display:flex; gap:12px; z-index:3; }
@@ -71,7 +69,6 @@
         .about-text h2 { font-size:2.8rem; margin-bottom:1.5rem; }
         .about-text p { color:var(--text-muted); font-size:1.05rem; line-height:1.8; }
         .about-img { width:100%; height:450px; object-fit:cover; border-radius:12px; box-shadow:var(--shadow-lg); transition:0.5s; }
-        .about-img:hover { transform:scale(1.02); }
 
         /* AMENITIES */
         .amenities-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:2rem; }
@@ -95,15 +92,18 @@
         .room-details .btn-sm:hover { background:var(--gold); color:#fff; }
 
         /* BOOKING FORM */
-        .booking-form { max-width:700px; margin:0 auto; background:var(--white); padding:2.5rem; border-radius:20px; box-shadow:var(--shadow-lg); }
+        .booking-form { max-width:700px; margin:0 auto; background:var(--white); padding:2.5rem; border-radius:20px; box-shadow:var(--shadow-lg); transition:0.5s; }
         .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
         .form-group { display:flex; flex-direction:column; gap:0.4rem; }
         .form-group label { font-weight:600; font-size:0.9rem; }
         .form-group input, .form-group select { padding:0.8rem 1rem; border:1.5px solid #ddd; border-radius:8px; font-family:var(--font-body); }
-        .btn-block { width:100%; padding:1rem; background:var(--gold); border:none; border-radius:50px; font-weight:700; font-size:1rem; cursor:pointer; transition:0.3s; }
+        .btn-block { width:100%; padding:1rem; background:var(--gold); border:none; border-radius:50px; font-weight:700; font-size:1rem; cursor:pointer; transition:0.3s; text-transform:uppercase; }
         .btn-block:hover { background:var(--gold-dark); }
-        .confirmation { display:none; text-align:center; padding:2rem; }
-        .confirmation h3 { color:var(--gold); margin-bottom:1rem; }
+        .confirmation-page { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--ivory); z-index:2000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; }
+        .confirmation-page.active { display:flex; }
+        .confirmation-page h2 { font-size:3rem; color:var(--gold); margin-bottom:1rem; }
+        .confirmation-page p { font-size:1.2rem; margin-bottom:0.5rem; }
+        .confirmation-page .btn { margin-top:2rem; }
 
         /* GALLERY */
         .gallery-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:1.2rem; }
@@ -143,30 +143,28 @@
             .about-grid, .contact-grid { grid-template-columns:1fr; }
             .form-row { grid-template-columns:1fr; }
         }
-        @media (max-width: 768px) {
-            .nav-links { gap:0.8rem; }
-            .nav-links a { font-size:0.7rem; }
-        }
     </style>
 </head>
 <body>
 
-<nav class="navbar" id="navbar">
+<!-- NAV -->
+<nav class="navbar">
     <div class="nav-inner">
         <a href="#" class="logo">CLUB<span>SKYPARK</span></a>
         <ul class="nav-links">
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#amenities">Amenities</a></li>
-            <li><a href="#rooms">Rooms</a></li>
-            <li><a href="#gallery">Gallery</a></li>
-            <li><a href="#reviews">Reviews</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="#book" class="btn-book">Book Now</a></li>
+            <li><a href="#home">HOME</a></li>
+            <li><a href="#about">ABOUT</a></li>
+            <li><a href="#amenities">AMENITIES</a></li>
+            <li><a href="#rooms">ROOMS</a></li>
+            <li><a href="#gallery">GALLERY</a></li>
+            <li><a href="#reviews">REVIEWS</a></li>
+            <li><a href="#contact">CONTACT</a></li>
+            <li><a href="#book" class="btn-book">BOOKNOW</a></li>
         </ul>
     </div>
 </nav>
 
+<!-- HERO -->
 <section id="home" class="hero">
     <div class="hero-slide active" style="background-image: url('images/hero1.jpg');"></div>
     <div class="hero-slide" style="background-image: url('images/hero2.jpg');"></div>
@@ -176,11 +174,12 @@
         <h2>CLUB SKYPARK</h2>
         <div class="sub">HOTEL & RESORT</div>
         <div class="tagline">WHERE LUXURY MEETS SERENITY!</div>
-        <a href="#book" class="hero-btn">Reserve Your Stay</a>
+        <a href="#book" class="hero-btn">RESERVE YOUR STAY</a>
     </div>
     <div class="slider-dots" id="sliderDots"></div>
 </section>
 
+<!-- ABOUT -->
 <section id="about" class="section">
     <div class="container about-grid">
         <div class="about-text"><h2>Welcome to CLUB SKYPARK</h2><p>Nestled on Manasa Road, Neemuch, our resort is a sanctuary of refined luxury. From the moment you arrive, you are enveloped in the warmth of Indian hospitality interwoven with contemporary sophistication.</p></div>
@@ -188,34 +187,39 @@
     </div>
 </section>
 
+<!-- AMENITIES -->
 <section id="amenities" class="section" style="background: var(--ivory);">
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Exquisite Amenities</h2>
         <div class="amenities-grid">
-            <div class="amenity-card"><i class="fas fa-dumbbell amenity-icon"></i><h3>Fully Equipped Gym</h3><p>State‑of‑the‑art fitness centre with personal trainers available.</p></div>
-            <div class="amenity-card"><i class="fas fa-swimmer amenity-icon"></i><h3>Swimming Pool</h3><p>Infinity pool with panoramic views and poolside service.</p></div>
-            <div class="amenity-card"><i class="fas fa-glass-cheers amenity-icon"></i><h3>3 Banquet Halls</h3><p>Elegant venues perfect for weddings, receptions, and celebrations.</p></div>
-            <div class="amenity-card"><i class="fas fa-music amenity-icon"></i><h3>DJ Hall</h3><p>Sound‑proofed DJ party hall with professional lighting and sound system.</p></div>
-            <div class="amenity-card"><i class="fas fa-briefcase amenity-icon"></i><h3>Conference Hall</h3><p>Fully equipped corporate conference room for meetings and seminars.</p></div>
+            <div class="amenity-card"><i class="fas fa-dumbbell amenity-icon"></i><h3>Fully Equipped Gym</h3><p>State‑of‑the‑art fitness centre with personal trainers.</p></div>
+            <div class="amenity-card"><i class="fas fa-swimmer amenity-icon"></i><h3>Swimming Pool</h3><p>Infinity pool with panoramic views.</p></div>
+            <div class="amenity-card"><i class="fas fa-glass-cheers amenity-icon"></i><h3>3 Banquet Halls</h3><p>Elegant venues for weddings & celebrations.</p></div>
+            <div class="amenity-card"><i class="fas fa-music amenity-icon"></i><h3>DJ Hall</h3><p>Sound‑proofed party hall with pro audio.</p></div>
+            <div class="amenity-card"><i class="fas fa-briefcase amenity-icon"></i><h3>Conference Hall</h3><p>Fully equipped corporate meeting space.</p></div>
+            <div class="amenity-card"><i class="fas fa-home amenity-icon"></i><h3>4 Executive Premium Villas</h3><p>Luxurious standalone villas with private garden.</p></div>
+            <div class="amenity-card"><i class="fas fa-tree amenity-icon"></i><h3>Garden</h3><p>Lush landscaped gardens for leisurely strolls.</p></div>
+            <div class="amenity-card"><i class="fas fa-people-arrows amenity-icon"></i><h3>Choreographer Hall</h3><p>Professional dance & rehearsal studio.</p></div>
         </div>
     </div>
 </section>
 
+<!-- ROOMS -->
 <section id="rooms" class="section">
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Signature Rooms</h2>
         <div class="rooms-grid">
-            <div class="room-card"><div class="room-img"><img src="images/presidential.jpg" alt=""></div><div class="room-details"><h3>Presidential Suite</h3><div class="room-price">₹7,499/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
-            <div class="room-card"><div class="room-img"><img src="images/executive.jpg" alt=""></div><div class="room-details"><h3>Executive Suite</h3><div class="room-price">₹5,499/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
-            <div class="room-card"><div class="room-img"><img src="images/family.jpg" alt=""></div><div class="room-details"><h3>Family Suite</h3><div class="room-price">₹5,499/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
-            <div class="room-card"><div class="room-img"><img src="images/club-family.jpg" alt=""></div><div class="room-details"><h3>Club Family Room</h3><div class="room-price">₹4,999/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
-            <div class="room-card"><div class="room-img"><img src="images/platinum.jpg" alt=""></div><div class="room-details"><h3>Platinum Room</h3><div class="room-price">₹2,999/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
-            <div class="room-card"><div class="room-img"><img src="images/premium.jpg" alt=""></div><div class="room-details"><h3>Premium Room</h3><div class="room-price">₹2,499/night</div><a href="#book" class="btn-sm">Book Now</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/presidential.jpg" alt=""></div><div class="room-details"><h3>Presidential Suite</h3><div class="room-price">₹7,499/night</div><a href="#book" class="btn-sm">BOOK NOW</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/executive.jpg" alt=""></div><div class="room-details"><h3>Executive Suite</h3><div class="room-price">₹5,499/night</div><a href="#book" class="btn-sm">BOOK NOW</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/family.jpg" alt=""></div><div class="room-details"><h3>Family Suite</h3><div class="room-price">₹5,499/night</div><a href="#book" class="btn-sm">BOOK NOW</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/club-family.jpg" alt=""></div><div class="room-details"><h3>Club Family Room</h3><div class="room-price">₹4,999/night</div><a href="#book" class="btn-sm">BOOK NOW</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/platinum.jpg" alt=""></div><div class="room-details"><h3>Platinum Room</h3><div class="room-price">₹2,999/night</div><a href="#book" class="btn-sm">BOOK NOW</a></div></div>
+            <div class="room-card"><div class="room-img"><img src="images/premium.jpg" alt=""></div><div class="room-details"><h3>Premium Room</h3><div class="room-price">₹2,499/night</div><a href="#book" class="btn-sm">BOOK NOW</a></div></div>
         </div>
     </div>
 </section>
 
-<!-- BOOKING SECTION WITH SUPABASE INTEGRATION -->
+<!-- BOOKING SECTION -->
 <section id="book" class="section" style="background: var(--ivory);">
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Book Your Stay</h2>
@@ -243,15 +247,19 @@
                 <div class="form-group"><label>Check‑Out</label><input type="date" id="checkOut" required></div>
             </div>
             <div style="text-align:center; font-size:1.5rem; font-weight:700; margin:1.5rem 0;">Total: <span id="totalPrice" style="color:var(--gold);">₹0</span></div>
-            <button type="submit" class="btn-block">Confirm Reservation</button>
+            <button type="submit" class="btn-block">CONFIRM RESERVATION</button>
         </form>
-        <div id="confirmation" class="confirmation">
-            <h3>Reservation Confirmed!</h3>
-            <p id="confirmationMsg"></p>
-        </div>
     </div>
 </section>
 
+<!-- CONFIRMATION PAGE -->
+<div class="confirmation-page" id="confirmationPage">
+    <h2>✨ Reservation Confirmed!</h2>
+    <div id="confirmationDetails"></div>
+    <button class="btn btn-block" onclick="goBackToBooking()" style="max-width:300px; display:inline-block; text-transform:uppercase;">Book Another Stay</button>
+</div>
+
+<!-- GALLERY -->
 <section id="gallery" class="section">
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Photo Gallery</h2>
@@ -261,6 +269,7 @@
     </div>
 </section>
 
+<!-- TESTIMONIALS -->
 <section id="reviews" class="section" style="background: var(--ivory);">
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Guest Love</h2>
@@ -272,6 +281,7 @@
     </div>
 </section>
 
+<!-- CONTACT -->
 <section id="contact" class="section">
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Reach Us</h2>
@@ -291,6 +301,7 @@
     </div>
 </section>
 
+<!-- FOOTER -->
 <footer class="footer">
     <div class="container">
         <div class="footer-grid">
@@ -302,6 +313,7 @@
     </div>
 </footer>
 
+<!-- WHATSAPP -->
 <a href="https://wa.me/918827623267?text=Hello%20CLUB%20SKYPARK%2C%20I%20want%20to%20book%20a%20room.%20(Directed%20from%20the%20website)" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
 <script>
@@ -313,7 +325,7 @@ const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 // HERO SLIDER
 const slides = document.querySelectorAll('.hero-slide');
 const dotsContainer = document.getElementById('sliderDots');
-let current = 0;
+let currentSlide = 0;
 for (let i = 0; i < slides.length; i++) {
     const dot = document.createElement('button');
     dot.addEventListener('click', () => goToSlide(i));
@@ -321,21 +333,21 @@ for (let i = 0; i < slides.length; i++) {
 }
 const dots = document.querySelectorAll('.slider-dots button');
 function goToSlide(i) {
-    slides[current].classList.remove('active');
-    dots[current].classList.remove('active');
-    current = (i + slides.length) % slides.length;
-    slides[current].classList.add('active');
-    dots[current].classList.add('active');
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    currentSlide = (i + slides.length) % slides.length;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
 }
-setInterval(() => goToSlide(current + 1), 5000);
+setInterval(() => goToSlide(currentSlide + 1), 5000);
 goToSlide(0);
 
-// TESTIMONIALS
+// TESTIMONIALS SLIDER
 const track = document.getElementById('testimonialTrack');
-const cards = document.querySelectorAll('.testimonial-card');
+const tCards = document.querySelectorAll('.testimonial-card');
 let tIdx = 0;
 setInterval(() => {
-    tIdx = (tIdx + 1) % cards.length;
+    tIdx = (tIdx + 1) % tCards.length;
     track.style.transform = `translateX(-${tIdx * 100}%)`;
 }, 5000);
 
@@ -343,18 +355,23 @@ setInterval(() => {
 const roomSelect = document.getElementById('roomSelect');
 const checkIn = document.getElementById('checkIn');
 const checkOut = document.getElementById('checkOut');
+const totalSpan = document.getElementById('totalPrice');
+
 function updatePrice() {
     const opt = roomSelect.selectedOptions[0];
-    if (!opt || !checkIn.value || !checkOut.value) return;
+    if (!opt || !checkIn.value || !checkOut.value) {
+        totalSpan.textContent = '₹0';
+        return;
+    }
     const price = parseInt(opt.dataset.price);
     const nights = Math.max(1, (new Date(checkOut.value) - new Date(checkIn.value)) / 86400000);
-    document.getElementById('totalPrice').textContent = '₹' + (price * nights).toLocaleString();
+    totalSpan.textContent = '₹' + (price * nights).toLocaleString();
 }
 roomSelect.addEventListener('change', updatePrice);
 checkIn.addEventListener('change', updatePrice);
 checkOut.addEventListener('change', updatePrice);
 
-// BOOKING FORM (SUPABASE)
+// BOOKING SUBMISSION – redirect to full confirmation page
 document.getElementById('bookingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const opt = roomSelect.selectedOptions[0];
@@ -374,24 +391,38 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         const { error } = await supabaseClient.from('bookings').insert([booking]);
         if (error) {
             console.error(error);
-            alert('Booking failed');
+            alert('Booking failed. Please try again.');
             return;
         }
-        document.getElementById('bookingForm').style.display = 'none';
-        document.getElementById('confirmation').style.display = 'block';
-        document.getElementById('confirmationMsg').innerHTML =
-            `Thank you ${booking.guest_name}!<br>Your booking for ${booking.room_name} is confirmed.<br>Total: ₹${booking.total_price.toLocaleString()}`;
+        // Show full‑screen confirmation
+        document.getElementById('confirmationDetails').innerHTML =
+            `<p><strong>Guest:</strong> ${booking.guest_name}</p>
+             <p><strong>Room:</strong> ${booking.room_name}</p>
+             <p><strong>Check‑In:</strong> ${booking.check_in}</p>
+             <p><strong>Check‑Out:</strong> ${booking.check_out}</p>
+             <p><strong>Total:</strong> ₹${booking.total_price.toLocaleString()}</p>`;
+        document.getElementById('confirmationPage').classList.add('active');
+        window.scrollTo(0, 0);
     } catch (err) {
         console.error(err);
-        alert('Something went wrong');
+        alert('Something went wrong. Check console.');
     }
 });
 
-// SMOOTH SCROLL
+// Go back to booking form
+function goBackToBooking() {
+    document.getElementById('confirmationPage').classList.remove('active');
+    document.getElementById('bookingForm').reset();
+    totalSpan.textContent = '₹0';
+    window.location.hash = '#book';
+}
+
+// SMOOTH SCROLL for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', function(e) {
         e.preventDefault();
-        document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
     });
 });
 </script>
