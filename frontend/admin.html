@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CLUB SKYPARK Admin Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f5f5f5;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.dashboard{
+    max-width:1200px;
+    margin:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+th, td{
+    padding:15px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+}
+
+th{
+    background:#C9A96E;
+    color:white;
+}
+
+tr:hover{
+    background:#f9f9f9;
+}
+
+.status{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:14px;
+    font-weight:bold;
+}
+
+.pending{
+    background:orange;
+    color:white;
+}
+
+.confirmed{
+    background:green;
+    color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<h1>CLUB SKYPARK BOOKINGS</h1>
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Guest</th>
+<th>Phone</th>
+<th>Room</th>
+<th>Check In</th>
+<th>Check Out</th>
+<th>Total</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="bookingTable">
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+const supabaseUrl = 'https://fxymcysmgdthtkyzvhbx.supabase.co';
+
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4eW1jeXNtZ2R0aHRreXp2aGJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDI3NzQsImV4cCI6MjA5Mzk3ODc3NH0.yS3CuhAj2wbaxV9lQt8Ow2jzjRaf6e7VsepaoD-lzaM';
+
+const supabase = window.supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+);
+
+async function loadBookings(){
+
+    const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .order('id', { ascending:false });
+
+    if(error){
+        console.log(error);
+        alert('Failed to load bookings');
+        return;
+    }
+
+    const table = document.getElementById('bookingTable');
+
+    table.innerHTML = '';
+
+    data.forEach(booking => {
+
+        table.innerHTML += `
+        <tr>
+            <td>${booking.id}</td>
+            <td>${booking.guest_name}</td>
+            <td>${booking.guest_phone}</td>
+            <td>${booking.room_name}</td>
+            <td>${booking.check_in}</td>
+            <td>${booking.check_out}</td>
+            <td>₹${booking.total_price}</td>
+            <td>
+                <span class="status pending">
+                    ${booking.booking_status}
+                </span>
+            </td>
+        </tr>
+        `;
+
+    });
+
+}
+
+loadBookings();
+
+</script>
+
+</body>
+</html>

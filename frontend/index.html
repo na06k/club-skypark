@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --gold: #C9A96E;
@@ -213,7 +215,7 @@
     </div>
 </section>
 
-<!-- BOOKING SECTION WITH BACKEND INTEGRATION -->
+<!-- BOOKING SECTION WITH SUPABASE INTEGRATION -->
 <section id="book" class="section" style="background: var(--ivory);">
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Book Your Stay</h2>
@@ -303,9 +305,12 @@
 <a href="https://wa.me/918827623267?text=Hello%20CLUB%20SKYPARK%2C%20I%20want%20to%20book%20a%20room.%20(Directed%20from%20the%20website)" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
 <script>
-const API = 'http://localhost:5000/api';
+// SUPABASE CONNECTION
+const supabaseUrl = 'https://fxymcysmgdthtkyzvhbx.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4eW1jeXNtZ2R0aHRreXp2aGJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDI3NzQsImV4cCI6MjA5Mzk3ODc3NH0.yS3CuhAj2wbaxV9lQt8Ow2jzjRaf6e7VsepaoD-lzaM';
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// Hero slider
+// HERO SLIDER
 const slides = document.querySelectorAll('.hero-slide');
 const dotsContainer = document.getElementById('sliderDots');
 let current = 0;
@@ -325,7 +330,7 @@ function goToSlide(i) {
 setInterval(() => goToSlide(current + 1), 5000);
 goToSlide(0);
 
-// Testimonials slider
+// TESTIMONIALS
 const track = document.getElementById('testimonialTrack');
 const cards = document.querySelectorAll('.testimonial-card');
 let tIdx = 0;
@@ -334,7 +339,7 @@ setInterval(() => {
     track.style.transform = `translateX(-${tIdx * 100}%)`;
 }, 5000);
 
-// Price calculation
+// PRICE CALCULATION
 const roomSelect = document.getElementById('roomSelect');
 const checkIn = document.getElementById('checkIn');
 const checkOut = document.getElementById('checkOut');
@@ -349,39 +354,46 @@ roomSelect.addEventListener('change', updatePrice);
 checkIn.addEventListener('change', updatePrice);
 checkOut.addEventListener('change', updatePrice);
 
-// Booking submit to backend
+// BOOKING FORM (SUPABASE)
 document.getElementById('bookingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const opt = roomSelect.selectedOptions[0];
     const booking = {
-        guestName: document.getElementById('guestName').value,
-        guestEmail: document.getElementById('guestEmail').value,
-        guestPhone: document.getElementById('guestPhone').value,
-        roomName: opt.text.split(' –')[0],
-        checkIn: checkIn.value,
-        checkOut: checkOut.value,
-        totalPrice: parseFloat(document.getElementById('totalPrice').textContent.replace('₹','').replace(/,/g,''))
+        guest_name: document.getElementById('guestName').value,
+        guest_email: document.getElementById('guestEmail').value,
+        guest_phone: document.getElementById('guestPhone').value,
+        room_name: opt.value,
+        guests: 1,
+        check_in: checkIn.value,
+        check_out: checkOut.value,
+        total_price: parseFloat(
+            document.getElementById('totalPrice').textContent.replace('₹', '').replace(/,/g, '')
+        )
     };
     try {
-        const res = await fetch(`${API}/bookings`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(booking)
-        });
-        const result = await res.json();
+        const { error } = await supabaseClient.from('bookings').insert([booking]);
+        if (error) {
+            console.error(error);
+            alert('Booking failed');
+            return;
+        }
         document.getElementById('bookingForm').style.display = 'none';
         document.getElementById('confirmation').style.display = 'block';
-        document.getElementById('confirmationMsg').innerHTML = `Thank you, ${booking.guestName}!<br>Your booking for ${booking.roomName} is confirmed.<br>Total: ₹${booking.totalPrice.toLocaleString()}<br>Confirmation: ${result.confirmation || 'N/A'}`;
+        document.getElementById('confirmationMsg').innerHTML =
+            `Thank you ${booking.guest_name}!<br>Your booking for ${booking.room_name} is confirmed.<br>Total: ₹${booking.total_price.toLocaleString()}`;
     } catch (err) {
-        alert('Booking failed. Please try again.');
+        console.error(err);
+        alert('Something went wrong');
     }
 });
 
-// Smooth links
-document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', function(e) {
-    e.preventDefault();
-    document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
-}));
+// SMOOTH SCROLL
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+    });
+});
 </script>
 </body>
 </html>
