@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CLUB SKYPARK | Staff Login</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #0D0D0D;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .login-box {
+      background: #fff;
+      padding: 2rem 2.5rem;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+    }
+    .login-box h1 {
+      color: #C9A96E;
+      margin: 0 0 0.5rem;
+      font-size: 2rem;
+    }
+    .login-box h3 {
+      font-weight: 400;
+      color: #555;
+      margin-bottom: 1.5rem;
+    }
+    .login-box input {
+      display: block;
+      width: 100%;
+      padding: 0.8rem;
+      margin: 0.7rem 0;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 0.8rem;
+      background: #C9A96E;
+      color: #0D0D0D;
+      font-weight: bold;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: 0.3s;
+    }
+    .login-box button:hover {
+      background: #b08a4d;
+    }
+    #error {
+      color: red;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>CLUB SKYPARK</h1>
+    <h3>Hotel Management System</h3>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button id="loginBtn">Sign In</button>
+    <p id="error"></p>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const { token, user } = await api.post('/auth/login', { email, password });
+        api.saveSession(token, user);
+        window.location.href = 'admin.html';
+      } catch (error) {
+        document.getElementById('error').textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

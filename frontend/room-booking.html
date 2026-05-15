@@ -1,0 +1,101 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Room Booking | CLUB SKYPARK</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/public-pages.css"></head><body><nav class="navbar"><div class="nav-inner"><a href="index.html" class="logo">CLUB<span>SKYPARK</span></a><ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="rooms.html">Rooms</a></li><li><a href="events.html">Events</a></li><li><a href="gallery.html">Gallery</a></li><li><a href="contact.html">Contact</a></li><li><a href="room-booking.html" class="btn-book">BOOK NOW</a></li></ul></div></nav><header class="hero-page" style="background-image:url('https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1600&q=80')"><div class="container"><div class="eyebrow">Room Booking</div><h1>Book Your Stay</h1><p>Select your room, dates, payment method and advance amount. Payment records are saved for staff verification.</p></div></header><section class="section"><div class="container"><div class="section-head center"><div class="eyebrow">Room Categories</div><h2>Choose your room</h2><p>Club Skypark online room categories are listed here for quick booking.</p></div><div class="grid three"><article class="card room-option-card" id="premium-rooms"><img src="https://images.unsplash.com/photo-1560448075-bb485b067938?auto=format&fit=crop&w=1200&q=80" alt="Premium Rooms"><div class="card-body"><h3>Premium Rooms</h3><p>Comfortable modern rooms for short stays, business travel and relaxed visits.</p><div class="meta">From Rs 2,499/night</div><a class="btn room-pick" href="#bookingForm" data-room="Premium Rooms">Book this category</a></div></article><article class="card room-option-card" id="platinum-rooms"><img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1200&q=80" alt="Platinum Rooms"><div class="card-body"><h3>Platinum Rooms</h3><p>Elegant rooms with refined interiors, premium bedding and polished comfort.</p><div class="meta">From Rs 2,999/night</div><a class="btn room-pick" href="#bookingForm" data-room="Platinum Rooms">Book this category</a></div></article><article class="card room-option-card" id="club-family-rooms"><img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80" alt="Club Family Rooms"><div class="card-body"><h3>Club Family Rooms</h3><p>Spacious family-focused rooms for guests travelling together.</p><div class="meta">From Rs 4,999/night</div><a class="btn room-pick" href="#bookingForm" data-room="Club Family Rooms">Book this category</a></div></article><article class="card room-option-card" id="family-suites"><img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80" alt="Family Suites"><div class="card-body"><h3>Family Suites</h3><p>Larger suite-style accommodation for families and longer stays.</p><div class="meta">From Rs 5,499/night</div><a class="btn room-pick" href="#bookingForm" data-room="Family Suites">Book this category</a></div></article><article class="card room-option-card" id="junior-suite"><img src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1200&q=80" alt="Junior Suite"><div class="card-body"><h3>Junior Suite</h3><p>A premium suite option with more space and a refined stay experience.</p><div class="meta">From Rs 5,999/night</div><a class="btn room-pick" href="#bookingForm" data-room="Junior Suite">Book this category</a></div></article><article class="card room-option-card" id="executive-suites"><img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80" alt="Executive Suites"><div class="card-body"><h3>Executive Suites</h3><p>Designed for business guests and premium comfort seekers.</p><div class="meta">From Rs 5,499/night</div><a class="btn room-pick" href="#bookingForm" data-room="Executive Suites">Book this category</a></div></article><article class="card room-option-card" id="presidential-suite"><img src="https://images.unsplash.com/photo-1590490359854-dfba19688d70?auto=format&fit=crop&w=1200&q=80" alt="Presidential Suite"><div class="card-body"><h3>Presidential Suite</h3><p>The most premium stay experience for special occasions and VIP guests.</p><div class="meta">From Rs 7,499/night</div><a class="btn room-pick" href="#bookingForm" data-room="Presidential Suite">Book this category</a></div></article></div></div></section><section class="section alt"><div class="container booking-shell"><div><div class="eyebrow">Reservation</div><h2>Room booking with payment details</h2><p>Select a room category above or use the form. You can record pay-at-hotel, advance payment, full payment and transaction references.</p><ul class="feature-list"><li>Online room categories available</li><li>Date-wise price calculation</li><li>Advance and balance tracking</li><li>Payment record saved in backend</li></ul></div><form id="bookingForm" class="booking-form"><div class="form-row"><div class="form-group"><label>Full Name</label><input type="text" id="guestName" required></div><div class="form-group"><label>Email</label><input type="email" id="guestEmail" required></div></div><div class="form-row"><div class="form-group"><label>Phone</label><input type="tel" id="guestPhone" required></div><div class="form-group"><label>Room Category</label><select id="roomSelect" required><option value="">Select Room</option><option value="Premium Rooms" data-price="2499">Premium Rooms - Rs 2,499/night</option>
+                            <option value="Platinum Rooms" data-price="2999">Platinum Rooms - Rs 2,999/night</option>
+                            <option value="Club Family Rooms" data-price="4999">Club Family Rooms - Rs 4,999/night</option>
+                            <option value="Family Suites" data-price="5499">Family Suites - Rs 5,499/night</option>
+                            <option value="Junior Suite" data-price="5999">Junior Suite - Rs 5,999/night</option>
+                            <option value="Executive Suites" data-price="5499">Executive Suites - Rs 5,499/night</option>
+                            <option value="Presidential Suite" data-price="7499">Presidential Suite - Rs 7,499/night</option></select></div></div><div class="form-row"><div class="form-group"><label>Check-In</label><input type="date" id="checkIn" required></div><div class="form-group"><label>Check-Out</label><input type="date" id="checkOut" required></div></div><div class="payment-panel"><h3>Payment Details</h3><div class="form-row"><div class="form-group"><label>Payment Method</label><select id="paymentMethod"><option value="pay_at_hotel">Pay at Hotel</option><option value="upi">UPI</option><option value="cash">Cash</option><option value="card">Card</option><option value="bank_transfer">Bank Transfer</option></select></div><div class="form-group"><label>Payment Plan</label><select id="paymentPlan"><option value="none">No advance now</option><option value="advance">30% advance</option><option value="full">Full payment</option><option value="custom">Custom paid amount</option></select></div></div><div class="form-row"><div class="form-group"><label>Paid Amount</label><input type="number" id="paidAmount" min="0" step="1" value="0"></div><div class="form-group"><label>Transaction / Reference ID</label><input type="text" id="paymentReference" placeholder="UPI ref, card slip, bank ref"></div></div><div class="form-group"><label>Payment Notes</label><input type="text" id="paymentNotes" placeholder="Optional notes for hotel staff"></div><div class="payment-summary"><div><span>Total</span><strong id="totalPrice">Rs 0</strong></div><div><span>Paid</span><strong id="paidPreview">Rs 0</strong></div><div><span>Balance</span><strong id="balancePreview">Rs 0</strong></div></div></div><button type="submit" class="btn btn-wide">Confirm Reservation</button><p class="form-note" id="bookingMessage"></p></form></div></section><div class="confirmation-page" id="confirmationPage"><h2>Reservation Confirmed</h2><div id="confirmationDetails"></div><a class="btn" href="room-booking.html">Book Another Stay</a></div><footer class="footer"><div class="container"><div class="footer-grid"><div><h4>CLUB SKYPARK</h4><p>A luxury hotel and resort in Neemuch for stays, celebrations, dining and corporate gatherings.</p></div><div><h4>Explore</h4><a href="about.html">About</a><a href="rooms.html">Rooms</a><a href="events.html">Events</a><a href="gallery.html">Gallery</a><a href="contact.html">Contact</a><a href="room-booking.html">Book Now</a></div><div><h4>Contact</h4><p>Manasa Road, Neemuch, MP 458441</p><p>+91 88276 23267</p><p>clubskyparkhotel@gmail.com</p></div></div><div class="copyright">&copy; 2026 CLUB SKYPARK. All rights reserved.</div></div></footer><script src="js/api.js"></script><script>
+const roomSelect = document.getElementById('roomSelect');
+const checkIn = document.getElementById('checkIn');
+const checkOut = document.getElementById('checkOut');
+const totalSpan = document.getElementById('totalPrice');
+const paidAmount = document.getElementById('paidAmount');
+const paidPreview = document.getElementById('paidPreview');
+const balancePreview = document.getElementById('balancePreview');
+const paymentMethod = document.getElementById('paymentMethod');
+const paymentPlan = document.getElementById('paymentPlan');
+const paymentReference = document.getElementById('paymentReference');
+const paymentNotes = document.getElementById('paymentNotes');
+const message = document.getElementById('bookingMessage');
+function formatMoney(value) { return 'Rs ' + Math.max(0, Math.round(Number(value || 0))).toLocaleString('en-IN'); }
+function getTotal() {
+  const opt = roomSelect.selectedOptions[0];
+  if (!opt || !opt.dataset.price || !checkIn.value || !checkOut.value) return 0;
+  const price = Number(opt.dataset.price);
+  const nights = Math.max(1, Math.ceil((new Date(checkOut.value) - new Date(checkIn.value)) / 86400000));
+  return price * nights;
+}
+function syncPaymentAmount() {
+  const total = getTotal();
+  if (paymentPlan.value === 'none') paidAmount.value = 0;
+  if (paymentPlan.value === 'advance') paidAmount.value = Math.ceil(total * 0.3);
+  if (paymentPlan.value === 'full') paidAmount.value = total;
+  updateSummary();
+}
+function updateSummary() {
+  const total = getTotal();
+  let paid = Math.max(0, Number(paidAmount.value || 0));
+  if (paid > total && total > 0) {
+    paid = total;
+    paidAmount.value = total;
+  }
+  const balance = Math.max(0, total - paid);
+  totalSpan.textContent = formatMoney(total);
+  paidPreview.textContent = formatMoney(paid);
+  balancePreview.textContent = formatMoney(balance);
+  return { total, paid, balance };
+}
+function selectRoom(name) {
+  for (const option of roomSelect.options) {
+    if (option.value.toLowerCase() === String(name).toLowerCase()) {
+      option.selected = true;
+      syncPaymentAmount();
+      break;
+    }
+  }
+}
+roomSelect.addEventListener('change', syncPaymentAmount);
+checkIn.addEventListener('change', syncPaymentAmount);
+checkOut.addEventListener('change', syncPaymentAmount);
+paymentPlan.addEventListener('change', syncPaymentAmount);
+paidAmount.addEventListener('input', () => { paymentPlan.value = 'custom'; updateSummary(); });
+document.querySelectorAll('.room-pick').forEach(button => {
+  button.addEventListener('click', () => selectRoom(button.dataset.room));
+});
+const params = new URLSearchParams(window.location.search);
+if (params.get('room')) selectRoom(params.get('room'));
+updateSummary();
+document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  message.textContent = '';
+  const opt = roomSelect.selectedOptions[0];
+  const summary = updateSummary();
+  if (!summary.total) {
+    message.textContent = 'Please select room and dates first.';
+    return;
+  }
+  const booking = {
+    guest_name: document.getElementById('guestName').value,
+    guest_email: document.getElementById('guestEmail').value,
+    guest_phone: document.getElementById('guestPhone').value,
+    room_name: opt.value,
+    guests: 1,
+    check_in: checkIn.value,
+    check_out: checkOut.value,
+    total_price: summary.total,
+    payment_method: paymentMethod.value,
+    paid_amount: summary.paid,
+    payment_reference: paymentReference.value.trim(),
+    payment_notes: paymentNotes.value.trim()
+  };
+  try {
+    await api.post('/public/bookings', booking);
+    document.getElementById('confirmationDetails').innerHTML = '<p><strong>Guest:</strong> ' + booking.guest_name + '</p><p><strong>Room:</strong> ' + booking.room_name + '</p><p><strong>Check-In:</strong> ' + booking.check_in + '</p><p><strong>Check-Out:</strong> ' + booking.check_out + '</p><p><strong>Total:</strong> ' + formatMoney(summary.total) + '</p><p><strong>Paid:</strong> ' + formatMoney(summary.paid) + '</p><p><strong>Balance:</strong> ' + formatMoney(summary.balance) + '</p><p><strong>Payment:</strong> ' + paymentMethod.options[paymentMethod.selectedIndex].text + '</p>';
+    document.getElementById('confirmationPage').classList.add('active');
+    window.scrollTo(0, 0);
+  } catch (err) {
+    console.error(err);
+    message.textContent = err.message || 'Something went wrong. Please contact the hotel desk.';
+  }
+});
+</script></body></html>
