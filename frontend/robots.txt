@@ -1,0 +1,35 @@
+# Club Sky Park Hotel & Resort - Search Engine Directives
+# This file helps search engines index your website correctly
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: *.pdf
+Crawl-delay: 1
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /login
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /login
+
+# Sitemap location
+Sitemap: https://www.clubskypark.com/sitemap.xml
+
+# Good crawlers
+User-agent: Slurp
+User-agent: DuckDuckBot
+User-agent: Baiduspider
+
+# Bad bots and crawlers
+User-agent: MJ12bot
+User-agent: AhrefsBot
+User-agent: SemrushBot
+Disallow: /

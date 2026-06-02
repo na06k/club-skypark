@@ -1,6 +1,7 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const { normalizePermissions } = require('./permissions');
 
 const dataDir = path.join(__dirname, '..', 'data');
 const dataFile = path.join(dataDir, 'club-skypark.json');
@@ -9,9 +10,15 @@ const emptyData = {
   staff: [],
   rooms: [],
   bookings: [],
+  checkins: [],
+  checkouts: [],
   guests: [],
+  guest_preferences: [],
+  guest_notes: [],
+  guest_flags: [],
   guest_documents: [],
   payments: [],
+  payment_reminders: [],
   restaurant_orders: [],
   receipts: [],
   receipt_items: [],
@@ -19,7 +26,33 @@ const emptyData = {
   store_items: [],
   stock_movements: [],
   ledger_entries: [],
-  daily_report_closings: []
+  daily_report_closings: [],
+  enquiries: [],
+  housekeeping_tasks: [],
+  housekeeping_checklists: [],
+  room_status_history: [],
+  laundry_orders: [],
+  room_service_orders: [],
+  minibar_items: [],
+  guest_service_charges: [],
+  staff_schedules: [],
+  staff_attendance: [],
+  staff_rosters: [],
+  inventory_items: [],
+  inventory_movements: [],
+  inventory_wastage: [],
+  suppliers: [],
+  loyalty_members: [],
+  loyalty_points: [],
+  loyalty_vouchers: [],
+  pricing_rules: [],
+  notifications: [],
+  notification_templates: [],
+  email_logs: [],
+  sms_logs: [],
+  whatsapp_templates: [],
+  print_logs: [],
+  maintenance_requests: []
 };
 
 function now() {
@@ -27,7 +60,11 @@ function now() {
 }
 
 function today() {
-  return now().slice(0, 10);
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function readData() {
@@ -36,6 +73,14 @@ function readData() {
 
 function writeData(data) {
   fs.writeFileSync(dataFile, JSON.stringify(data, null, 2));
+}
+
+function writeDataIfChanged(data) {
+  const next = JSON.stringify(data, null, 2);
+  const current = fs.existsSync(dataFile) ? fs.readFileSync(dataFile, 'utf8') : '';
+  if (current !== next) {
+    fs.writeFileSync(dataFile, next);
+  }
 }
 
 function nextId(items) {
@@ -53,9 +98,15 @@ function seed(data) {
       email: adminEmail,
       password_hash: bcrypt.hashSync(adminPassword, 10),
       role: 'super_admin',
+      permissions: normalizePermissions([], 'super_admin'),
       created_at: now()
     });
   }
+
+  data.staff = data.staff.map((staff) => ({
+    ...staff,
+    permissions: normalizePermissions(staff.permissions, staff.role)
+  }));
 
   if (data.rooms.length === 0) {
     [
@@ -107,12 +158,16 @@ function initDb() {
   }
   const data = { ...emptyData, ...readData() };
   seed(data);
-  writeData(data);
+  writeDataIfChanged(data);
 }
 
 const store = {
   all(table) {
     return readData()[table] || [];
+  },
+
+  list(table) {
+    return this.all(table);
   },
 
   find(table, predicate) {
@@ -147,7 +202,7 @@ const store = {
   transaction(callback) {
     const data = { ...emptyData, ...readData() };
     const result = callback(data);
-    writeData(data);
+    writeDataIfChanged(data);
     return result;
   }
 };

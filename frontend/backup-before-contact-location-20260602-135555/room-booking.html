@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <meta name="title" content="Book Hotel Rooms Online | Club Sky Park Neemuch Reservation System">
+  <meta name="description" content="Easy online room booking at Club Sky Park. Select dates, choose room type, check availability & book instantly. Pay at hotel option available. Confirmation via WhatsApp/Email.">
+  <meta name="keywords" content="book hotel online, hotel reservation neemuch, room booking system, reserve hotel room, hotel availability">
+  <meta name="robots" content="index, follow">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.clubskypark.com/room-booking.html">
+  <meta property="og:title" content="Book Hotel Rooms Online | Club Sky Park">
+  <meta property="og:description" content="Fast online booking system. Check availability, select room, and book instantly. Pay at hotel option available.">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://www.clubskypark.com/room-booking.html">
+  <meta name="twitter:title" content="Book Hotel Rooms Online">
+
+  <link rel="canonical" href="https://www.clubskypark.com/room-booking.html">
+
+  <title>Room Booking | CLUB SKYPARK</title>
+  <link rel="icon" href="images/Club_SkyPark_Reception_Lobby_Cleaned.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="images/Club_SkyPark_Reception_Lobby_Cleaned.jpg">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.clubskypark.com"},
+      {"@type": "ListItem", "position": 2, "name": "Book Room", "item": "https://www.clubskypark.com/room-booking.html"}
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/public-pages.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">CLUB <span>SKYPARK</span></a>
+      <button class="mobile-nav-toggle" type="button" onclick="document.body.classList.toggle('mobile-nav-open')" aria-label="Open navigation">☰</button>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="rooms.html">Rooms</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a class="active btn-book" href="room-booking.html#bookingForm">Book Now</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero-page" style="background-image:url('images/platinum.jpg')">
+    <div class="container">
+      <div class="eyebrow">Room Booking</div>
+      <h1>Book your stay and pay at hotel.</h1>
+      <p>Select your room category, dates and estimated arrival time. Payment status remains Due until settled at the hotel.</p>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head center">
+        <div class="eyebrow">Room Categories</div>
+        <h2>Choose your room</h2>
+        <p>These are the online room categories available for direct website booking.</p>
+      </div>
+      <div class="grid three">
+        <article class="card room-option-card" id="premium-rooms"><img src="images/premium.jpg" alt="Premium room"><div class="card-body"><h3>Premium Rooms</h3><p>King or twin bed setup, split AC, flat-screen TV, tea/coffee kettle, ambient LED lighting, marble flooring and attached bathroom. Ideal for business travel and short stays.</p><div class="meta">From Rs 2,499/night</div><a class="btn room-pick" href="#bookingForm" data-room="Premium Rooms">Book this category</a></div></article>
+        <article class="card room-option-card" id="platinum-rooms"><img src="images/platinum.jpg" alt="Platinum room"><div class="card-body"><h3>Platinum Rooms</h3><p>Spacious king bed with designer headboard, lounge seating, split AC, flat-screen TV, premium bedding and warm lighting. A refined step up for guests who want extra comfort.</p><div class="meta">From Rs 2,999/night</div><a class="btn room-pick" href="#bookingForm" data-room="Platinum Rooms">Book this category</a></div></article>
+        <article class="card room-option-card" id="club-family-rooms"><img src="images/club-family.jpg" alt="Club family room"><div class="card-body"><h3>Club Family Rooms</h3><p>Three beds in one room &mdash; perfect for families of up to 4. Includes dining table, sitting area, AC, TV and tea station. Designed for groups travelling together.</p><div class="meta">From Rs 4,999/night</div><a class="btn room-pick" href="#bookingForm" data-room="Club Family Rooms">Book this category</a></div></article>
+        <article class="card room-option-card" id="family-suites"><img src="images/familysuite.jpg" alt="Family suite"><div class="card-body"><h3>Family Suites</h3><p>Larger suite layout with separate sitting area, premium king bed, full amenities, AC, TV and hotel services. Suited for families on longer stays.</p><div class="meta">From Rs 5,499/night</div><a class="btn room-pick" href="#bookingForm" data-room="Family Suites">Book this category</a></div></article>
+        <article class="card room-option-card" id="executive-suites"><div class="room-media-slider"><img src="images/executive.jpg" alt="Executive suite"><img src="images/executive2.jpg" alt="Executive suite washroom" onerror="this.onerror=null;this.src='images/executive.jpg';"></div><div class="card-body"><h3>Executive Suites</h3><p>Premium suite with king bed, velvet headboard, work desk, sitting chair, ambient lighting and full hotel amenities. Crafted for business guests and premium comfort seekers.</p><div class="meta">From Rs 5,499/night</div><a class="btn room-pick" href="#bookingForm" data-room="Executive Suites">Book this category</a></div></article>
+        <article class="card room-option-card" id="presidential-suite"><div class="room-media-slider"><img src="images/presidentual.jpg" alt="Presidential suite"><img src="images/presidentual2.jpeg" alt="Presidential suite washroom" onerror="this.onerror=null;this.src='images/presidentual.jpg';"></div><div class="card-body"><h3>Presidential Suite</h3><p>The finest room in the hotel. Grand king bed, luxury finishes, crystal-style pendant lights, large windows, premium linens and VIP-level hospitality. For special occasions and elite guests.</p><div class="meta">From Rs 7,499/night</div><a class="btn room-pick" href="#bookingForm" data-room="Presidential Suite">Book this category</a></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="container booking-shell booking-shell-single">
+      <form id="bookingForm" class="booking-form">
+        <div class="form-row">
+          <div class="form-group"><label>Full Name</label><input type="text" id="guestName" required></div>
+          <div class="form-group"><label>Email</label><input type="email" id="guestEmail" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>WhatsApp / Phone Number</label><input type="tel" id="guestPhone" required></div>
+          <div class="form-group"><label>No. of Guests</label><input type="number" id="guestCount" min="1" value="1" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Room Category</label>
+            <select id="roomSelect" required>
+              <option value="">Select Room</option>
+              <option value="Premium Rooms" data-price="2499">Premium Rooms - Rs 2,499/night</option>
+              <option value="Platinum Rooms" data-price="2999">Platinum Rooms - Rs 2,999/night</option>
+              <option value="Club Family Rooms" data-price="4999">Club Family Rooms - Rs 4,999/night</option>
+              <option value="Family Suites" data-price="5499">Family Suites - Rs 5,499/night</option>
+              <option value="Executive Suites" data-price="5499">Executive Suites - Rs 5,499/night</option>
+              <option value="Presidential Suite" data-price="7499">Presidential Suite - Rs 7,499/night</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Payment Method</label><input type="text" value="Pay at Hotel" readonly></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Check-In</label><input type="date" id="checkIn" required></div>
+          <div class="form-group"><label>Estimated Arrival Time</label><input type="time" id="estimatedCheckinTime" value="11:00" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Check-Out</label><input type="date" id="checkOut" required></div>
+        </div>
+        <div class="payment-panel">
+          <h3>Payment Status</h3>
+          <div class="payment-summary">
+            <div><span>Total Amount</span><strong id="totalPrice">Rs 0</strong></div>
+            <div><span>Payment Status</span><strong id="paymentStatusPreview">Due</strong></div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-wide">Confirm Reservation</button>
+        <p class="form-note" id="bookingMessage"></p>
+      </form>
+    </div>
+  </section>
+
+  <div class="confirmation-page" id="confirmationPage">
+    <h2>Reservation Confirmed</h2>
+    <div id="confirmationDetails"></div>
+    <a class="btn" href="room-booking.html#bookingForm">Book Another Stay</a>
+  </div>
+
+  <footer class="footer"><div class="container"><div class="footer-grid"><div><h4>CLUB SKYPARK</h4><p>A luxury hotel and resort in Neemuch for stays, celebrations, dining and corporate gatherings.</p></div><div><h4>Explore</h4><a href="rooms.html">Rooms</a><a href="events.html">Events</a><a href="weddings.html">Weddings</a><a href="conferences.html">Conference</a><a href="parties.html">Parties</a><a href="gallery.html">Gallery</a></div><div><h4>Contact</h4><p>Manasa Road, Neemuch, MP 458441</p><p>+91 79748 23267</p><p>clubskyparkhotel@gmail.com</p></div></div><div class="copyright">&copy; 2026 CLUB SKYPARK. All rights reserved.</div></div></footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    const roomSelect = document.getElementById('roomSelect');
+    const checkIn = document.getElementById('checkIn');
+    const checkOut = document.getElementById('checkOut');
+    const estimatedCheckinTime = document.getElementById('estimatedCheckinTime');
+    const totalSpan = document.getElementById('totalPrice');
+    const guestCount = document.getElementById('guestCount');
+    const message = document.getElementById('bookingMessage');
+
+    function formatMoney(value) {
+      return 'Rs ' + Math.max(0, Math.round(Number(value || 0))).toLocaleString('en-IN');
+    }
+
+    function dateInputValue(value = new Date()) {
+      const date = value instanceof Date ? value : new Date(value);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function addDaysInputValue(days, from = new Date()) {
+      const date = from instanceof Date ? new Date(from) : new Date(`${from}T00:00:00`);
+      date.setDate(date.getDate() + days);
+      return dateInputValue(date);
+    }
+
+    function formatDateDisplay(value) {
+      if (!value) return '-';
+      const date = new Date(String(value).length === 10 ? `${value}T00:00:00` : value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      return `${day}/${month}/${date.getFullYear()}`;
+    }
+
+    function getTotal() {
+      const opt = roomSelect.selectedOptions[0];
+      if (!opt || !opt.dataset.price || !checkIn.value || !checkOut.value) return 0;
+      const price = Number(opt.dataset.price);
+      const nights = Math.max(1, Math.ceil((new Date(checkOut.value) - new Date(checkIn.value)) / 86400000));
+      return price * nights;
+    }
+
+    function updateSummary() {
+      const total = getTotal();
+      totalSpan.textContent = formatMoney(total);
+      return { total, paid: 0, balance: total };
+    }
+
+    function selectRoom(name) {
+      for (const option of roomSelect.options) {
+        if (option.value.toLowerCase() === String(name).toLowerCase()) {
+          option.selected = true;
+          updateSummary();
+          break;
+        }
+      }
+    }
+
+    roomSelect.addEventListener('change', updateSummary);
+    checkIn.addEventListener('change', () => {
+      checkOut.min = addDaysInputValue(1, checkIn.value || dateInputValue());
+      if (!checkOut.value || checkOut.value <= checkIn.value) checkOut.value = checkOut.min;
+      updateSummary();
+    });
+    checkOut.addEventListener('change', updateSummary);
+    document.querySelectorAll('.room-pick').forEach(button => button.addEventListener('click', () => selectRoom(button.dataset.room)));
+
+    const todayValue = dateInputValue();
+    checkIn.value = checkIn.value || todayValue;
+    checkIn.min = todayValue;
+    checkOut.value = checkOut.value || addDaysInputValue(1, todayValue);
+    checkOut.min = addDaysInputValue(1, todayValue);
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('room')) selectRoom(params.get('room'));
+    updateSummary();
+
+    document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      message.textContent = '';
+      const opt = roomSelect.selectedOptions[0];
+      const summary = updateSummary();
+      if (!summary.total) {
+        message.textContent = 'Please select room and dates first.';
+        return;
+      }
+
+      const booking = {
+        guest_name: document.getElementById('guestName').value,
+        guest_email: document.getElementById('guestEmail').value,
+        guest_phone: document.getElementById('guestPhone').value,
+        room_name: opt.value,
+        guests: Number(guestCount.value || 1),
+        check_in: checkIn.value,
+        check_out: checkOut.value,
+        estimated_checkin_time: estimatedCheckinTime.value,
+        total_price: summary.total,
+        payment_method: 'pay_at_hotel',
+        paid_amount: 0,
+        payment_reference: '',
+        payment_notes: 'Payment due at hotel'
+      };
+
+      try {
+        const response = await api.post('/public/bookings', booking);
+        const saved = response.booking || booking;
+        const whatsappStatus = response.whatsapp?.status || '';
+        const whatsappLine = whatsappStatus === 'sent'
+          ? '<p>WhatsApp confirmation has been sent to your number.</p>'
+          : whatsappStatus === 'not_configured'
+            ? '<p>Booking is saved. WhatsApp auto-message will start after the hotel WhatsApp API token is added.</p>'
+            : '<p>WhatsApp confirmation request has been recorded by the hotel system.</p>';
+        document.getElementById('confirmationDetails').innerHTML =
+          '<p><strong>Booking ID:</strong> ' + saved.id + '</p>' +
+          '<p><strong>Guest:</strong> ' + booking.guest_name + '</p>' +
+          '<p><strong>Room:</strong> ' + booking.room_name + '</p>' +
+          '<p><strong>Check-In:</strong> ' + formatDateDisplay(booking.check_in) + '</p>' +
+          '<p><strong>Estimated Arrival:</strong> ' + (booking.estimated_checkin_time || '-') + '</p>' +
+          '<p><strong>Check-Out:</strong> ' + formatDateDisplay(booking.check_out) + '</p>' +
+          '<p><strong>No. of Guests:</strong> ' + booking.guests + '</p>' +
+          '<p><strong>Total:</strong> ' + formatMoney(summary.total) + '</p>' +
+          '<p><strong>Payment Status:</strong> Due</p>' +
+          whatsappLine;
+        document.getElementById('confirmationPage').classList.add('active');
+        window.scrollTo(0, 0);
+      } catch (err) {
+        console.error(err);
+        message.textContent = err.message || 'Something went wrong. Please contact the hotel desk.';
+      }
+    });
+  </script>
+<script>
+  document.querySelectorAll('.nav-links a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      document.body.classList.remove('mobile-nav-open');
+    });
+  });
+</script>
+</body>
+</html>

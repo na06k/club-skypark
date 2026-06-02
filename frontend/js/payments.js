@@ -3,7 +3,7 @@ async function loadPayments() {
   try {
     const { payments } = await api.get('/payments');
     main.innerHTML = `<h1>Payments</h1>
-      <button onclick="showPaymentForm()">+ Record Payment</button>
+      ${window.pmsCan?.('payments.create') ? '<button onclick="showPaymentForm()">+ Record Payment</button>' : ''}
       <table>
         <tr><th>Booking</th><th>Amount</th><th>Method</th><th>Status</th></tr>
         ${payments.map((p) => `<tr>
@@ -19,6 +19,10 @@ async function loadPayments() {
 }
 
 function showPaymentForm() {
+  if (!window.pmsCan?.('payments.create')) {
+    alert('You do not have permission to record payments.');
+    return;
+  }
   document.getElementById('main-content').innerHTML = `
     <h2>Record Payment</h2>
     <input id="paymentBookingId" placeholder="Booking ID (optional)"><br>
@@ -36,6 +40,7 @@ function showPaymentForm() {
 }
 
 async function recordPayment() {
+  if (!window.pmsCan?.('payments.create')) return;
   await api.post('/payments', {
     booking_id: document.getElementById('paymentBookingId').value || null,
     amount: document.getElementById('paymentAmount').value,

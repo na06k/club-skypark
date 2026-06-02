@@ -1,0 +1,180 @@
+{
+  "hotel_schema": {
+    "@context": "https://schema.org/",
+    "@type": "Hotel",
+    "name": "Club Sky Park Hotel & Resort",
+    "image": [
+      "https://www.clubskypark.com/images/Club_SkyPark_Reception_Lobby_Cleaned.jpg",
+      "https://www.clubskypark.com/images/hotel-entrance.jpg",
+      "https://www.clubskypark.com/images/room-premier.jpg"
+    ],
+    "description": "Luxury 4-star hotel and resort in Neemuch, Madhya Pradesh with premium rooms, banquet facilities, and event spaces",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Manasa Road",
+      "addressLocality": "Neemuch",
+      "addressRegion": "MP",
+      "postalCode": "458441",
+      "addressCountry": "India"
+    },
+    "telephone": ["+91-75879-00088", "+91-79748-23267"],
+    "email": "clubskyparkhotel@gmail.com",
+    "url": "https://www.clubskypark.com",
+    "priceRange": "₹2500-₹7500",
+    "rating": {
+      "@type": "AggregateRating",
+      "@id": "https://www.clubskypark.com/#rating",
+      "ratingValue": "4.5",
+      "ratingCount": "150",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Guest"
+        },
+        "reviewBody": "Luxury at its finest. Excellent service and hospitality."
+      }
+    ],
+    "amenityFeature": [
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "Free WiFi"
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "Swimming Pool"
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "Gym/Fitness Center"
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "Restaurant"
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "Banquet Hall"
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "DJ Hall"
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "Room Service"
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "24-Hour Front Desk"
+      }
+    ],
+    "hasMap": "https://maps.google.com/?q=Club+Sky+Park+Hotel+Neemuch",
+    "checkinTime": "14:00",
+    "checkoutTime": "11:00",
+    "sameAs": [
+      "https://www.facebook.com/clubskypark",
+      "https://www.instagram.com/clubskypark",
+      "https://www.tripadvisor.com/Hotel_Review",
+      "https://www.google.com/maps/place/Club+Sky+Park"
+    ]
+  },
+  "organization_schema": {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Club Sky Park Hotel & Resort",
+    "legalName": "Club Sky Park Hotel & Resort",
+    "url": "https://www.clubskypark.com",
+    "email": "clubskyparkhotel@gmail.com",
+    "telephone": "+91-79748-23267",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Manasa Road",
+      "addressLocality": "Neemuch",
+      "addressRegion": "Madhya Pradesh",
+      "postalCode": "458441",
+      "addressCountry": "IN"
+    },
+    "sameAs": [
+      "https://www.facebook.com/clubskypark",
+      "https://www.instagram.com/clubskypark",
+      "https://www.google.com/maps/place/Club+Sky+Park"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "Hotel Reservations",
+      "telephone": "+91-79748-23267",
+      "email": "clubskyparkhotel@gmail.com"
+    }
+  },
+  "breadcrumb_schema": {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.clubskypark.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Rooms",
+        "item": "https://www.clubskypark.com/rooms.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Booking",
+        "item": "https://www.clubskypark.com/room-booking.html"
+      }
+    ]
+  },
+  "faq_schema": {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are the room rates at Club Sky Park?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Room rates range from ₹2,499 per night for Premium Rooms to ₹7,499 per night for Presidential Suite."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the check-in and check-out time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Check-in is at 2:00 PM and check-out is at 11:00 AM."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Club Sky Park have event spaces?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, we have banquet halls, DJ hall, and multiple event spaces suitable for weddings, conferences, and corporate events."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there free WiFi at the hotel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, complimentary WiFi is available throughout the hotel."
+        }
+      }
+    ]
+  }
+}

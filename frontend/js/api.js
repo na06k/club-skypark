@@ -22,14 +22,23 @@ const api = {
       headers.Authorization = `Bearer ${this.token}`;
     }
 
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+
     let response;
     try {
       response = await fetch(`${API_BASE}${path}`, {
         ...options,
-        headers
+        headers,
+        signal: controller.signal
       });
     } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Backend request timed out. Please restart the backend server and try again.');
+      }
       throw new Error('Backend is not running. Start it with: cd backend && npm start');
+    } finally {
+      window.clearTimeout(timeoutId);
     }
 
     if (response.status === 204) return null;
@@ -75,5 +84,3 @@ const api = {
     sessionStorage.removeItem('role');
   }
 };
-
-

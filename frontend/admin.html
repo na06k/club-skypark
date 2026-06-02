@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
+  <button id="adminMenuButton" class="global-menu-button" type="button" onclick="toggleSidebar()" aria-label="Open menu">&#9776;</button>
+  <button id="sidebarOverlay" class="sidebar-overlay" type="button" onclick="toggleSidebar()" aria-label="Close menu"></button>
   <aside id="sidebar" class="sidebar"></aside>
   <main id="main-content" class="main-content">
     <p>Loading...</p>
@@ -25,3 +27,4 @@
   <script src="js/admin.js"></script>
 </body>
 </html>
+
