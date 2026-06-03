@@ -27,7 +27,11 @@ function showPaymentForm() {
     <h2>Record Payment</h2>
     <input id="paymentBookingId" placeholder="Booking ID (optional)"><br>
     <input id="paymentAmount" type="number" placeholder="Amount"><br>
-    <input id="paymentMethod" placeholder="Method"><br>
+    <select id="paymentMethod">
+      <option value="cash">Cash</option>
+      <option value="upi">UPI</option>
+      <option value="card">Card</option>
+    </select><br>
     <select id="paymentStatus">
       <option value="paid">paid</option>
       <option value="pending">pending</option>

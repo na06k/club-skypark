@@ -104,13 +104,14 @@ function renderDashboardFloorBoard(rooms) {
 
   return orderedLabels.length ? orderedLabels.map((label) => {
     const floorRooms = grouped.get(label).sort(compareDashboardRooms);
+    const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     return `
       <section class="pms-floor-group">
-        <div class="pms-floor-head">
-          <strong>${label}</strong>
+        <button class="pms-floor-head" type="button" onclick="toggleDashboardFloor('${slug}')">
+          <strong><span class="floor-arrow" id="floorArrow-${slug}">v</span> ${label}</strong>
           <span>${floorRooms.length} rooms</span>
-        </div>
-        <div class="pms-floor-room-grid">
+        </button>
+        <div class="pms-floor-room-grid" id="floorRooms-${slug}">
           ${floorRooms.map((room) => `
             <article class="pms-room-tile ${dashStatusClass(room.status)}">
               <strong>${room.room_number}</strong>
@@ -122,6 +123,14 @@ function renderDashboardFloorBoard(rooms) {
       </section>
     `;
   }).join('') : '<p>No room data found.</p>';
+}
+
+function toggleDashboardFloor(slug) {
+  const roomGrid = document.getElementById(`floorRooms-${slug}`);
+  const arrow = document.getElementById(`floorArrow-${slug}`);
+  if (!roomGrid) return;
+  const collapsed = roomGrid.classList.toggle('collapsed');
+  if (arrow) arrow.textContent = collapsed ? '>' : 'v';
 }
 
 function dashboardActiveGroups(guests) {
@@ -175,8 +184,15 @@ function attachGuestContext(guests, rooms, bookings) {
   }).filter((guest) => !guest.check_out_date);
 }
 
-function checkoutPendingGuests(activeGuests, date) {
-  return activeGuests.filter((guest) => guest.booking?.check_out && guest.booking.check_out <= date);
+function dueRoomGuests(activeGuests) {
+  return activeGuests.filter((guest) => {
+    const booking = guest.booking || {};
+    const total = Number(booking.total_price || booking.amount || 0);
+    const paid = Number(booking.paid_amount || guest.advance_amount || 0);
+    const balance = Number(booking.balance_amount || Math.max(0, total - paid));
+    const paymentStatus = String(booking.payment_status || '').toLowerCase();
+    return balance > 0 || paymentStatus === 'due' || paymentStatus === 'pending';
+  });
 }
 
 function continueGuests(activeGuests, date) {
@@ -185,7 +201,7 @@ function continueGuests(activeGuests, date) {
 
 function dashboardQuickActions() {
   const actions = [
-    ['bookings', 'bookings.create', 'New Booking', 'Create or confirm reservation'],
+    ['bookings', 'bookings.create', 'New Reservation', 'Create or confirm reservation'],
     ['checkin', 'checkin.create', 'Check In', 'Register guest and upload ID'],
     ['checkout', 'checkout.create', 'Check Out', 'Generate final bill'],
     ['restaurant', 'restaurant.view', 'Restaurant POS', 'KOT and food billing'],
@@ -219,11 +235,11 @@ async function loadDashboard(date = dashDateValue(), options = {}) {
     const planFilteredGuests = planFilter === 'all'
       ? activeGuests
       : activeGuests.filter((guest) => String(guest.room_plan || 'CP').toLowerCase() === String(planFilter).toLowerCase());
-    const checkoutPending = checkoutPendingGuests(activeGuests, date);
+    const dueRooms = dueRoomGuests(activeGuests);
     const continueRooms = continueGuests(activeGuests, date);
     const occupiedRooms = rooms.filter((room) => room.status === 'occupied');
     const pendingPayments = bookings.filter((booking) => Number(booking.balance_amount || booking.total_price || 0) > Number(booking.paid_amount || 0) && !['cancelled', 'checked_out', 'completed'].includes(booking.status));
-    const revenueToday = Number(daily.summary.cash_received || daily.summary.receipt_total || 0);
+    const expensesToday = Number(daily.summary.expenses_total || 0);
     const occupancy = rooms.length ? Math.round((occupiedRooms.length / rooms.length) * 100) : 0;
 
     const countsByType = new Map();
@@ -275,11 +291,11 @@ async function loadDashboard(date = dashDateValue(), options = {}) {
         </div>
 
         <div class="pms-kpi-grid">
-          <article><span>Today's Bookings</span><strong>${daily.summary.reservations || 0}</strong><small>${formatDashDate(date)}</small></article>
+          <article><span>Reservation</span><strong>${daily.summary.reservations || 0}</strong><small>${formatDashDate(date)}</small></article>
           <article><span>Check-ins</span><strong>${daily.summary.checkins || 0}</strong><small>${activeGuests.length} active guests</small></article>
-          <article><span>Check-outs</span><strong>${daily.summary.checkouts || 0}</strong><small>${checkoutPending.length} pending today</small></article>
+          <article><span>Check-outs</span><strong>${daily.summary.checkouts || 0}</strong><small>${dueRooms.length} due rooms</small></article>
           <article><span>Occupancy</span><strong>${occupancy}%</strong><small>${occupiedRooms.length} of ${rooms.length} rooms</small></article>
-          <article><span>Revenue Today</span><strong>Rs ${dashMoney(revenueToday)}</strong><small>Cash / ledger received</small></article>
+          <article><span>Cash Out</span><strong>Rs ${dashMoney(expensesToday)}</strong><small>Expenses today</small></article>
           <article><span>Pending Payments</span><strong>${pendingPayments.length}</strong><small>Bookings with due amount</small></article>
         </div>
 
@@ -314,25 +330,30 @@ async function loadDashboard(date = dashDateValue(), options = {}) {
         <div class="pms-two-col wide-left">
           <section class="pms-panel">
             <div class="pms-panel-head">
-              <h3>Today Checkout Pending</h3>
-              <span>${checkoutPending.length} rooms</span>
+              <h3>Due Rooms</h3>
+              <span>${dueRooms.length} rooms</span>
             </div>
             <table class="pms-table">
-              <thead><tr><th>Check-in No</th><th>Guest</th><th>Mobile</th><th>Room</th><th>Check-in</th><th>Action</th></tr></thead>
+              <thead><tr><th>Check-in No</th><th>Guest</th><th>Mobile</th><th>Room / Category</th><th>Due Amount</th><th>Action</th></tr></thead>
               <tbody>
-                ${checkoutPending.length ? checkoutPending.map((guest) => `
+                ${dueRooms.length ? dueRooms.map((guest) => {
+                  const booking = guest.booking || {};
+                  const total = Number(booking.total_price || booking.amount || 0);
+                  const paid = Number(booking.paid_amount || guest.advance_amount || 0);
+                  const due = Number(booking.balance_amount || Math.max(0, total - paid));
+                  return `
                   <tr>
                     <td>${guest.check_in_no || guest.id}</td>
                     <td>${guest.name}</td>
                     <td>${guest.phone || '-'}</td>
                     <td>${guest.room_number || guest.room?.room_number || '-'} (${roomLabel(guest.room?.room_type || guest.room_type || '')})</td>
-                    <td>${formatDashDate(guest.check_in_date)} ${formatDashTime(guest.check_in_date)}</td>
+                    <td>Rs ${dashMoney(due)}</td>
                     <td>
                       ${window.pmsCan?.('checkout.create') ? `<button class="mini-btn cyan" onclick="checkoutGuest('${guest.id}')">Check Out</button>` : ''}
                       ${window.pmsCan?.('restaurant.create_order') ? `<button class="mini-btn slate" onclick="loadRestaurant('${guest.id}')">Add Food</button>` : ''}
                     </td>
                   </tr>
-                `).join('') : '<tr><td colspan="6">No checkout pending rooms.</td></tr>'}
+                `; }).join('') : '<tr><td colspan="6">No due rooms found.</td></tr>'}
               </tbody>
             </table>
           </section>

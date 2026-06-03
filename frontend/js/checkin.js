@@ -180,8 +180,8 @@ async function loadCheckin() {
                 <label class="field">Advance Amount<input id="ciAdvance" type="number" min="0" value="0"></label>
                 <label class="payment-mode">Payment Mode
                   <span class="radio-line"><input type="radio" name="ciPaymentMode" value="cash" checked> Cash</span>
-                  <span class="radio-line"><input type="radio" name="ciPaymentMode" value="online"> Online</span>
-                  <span class="radio-line"><input type="radio" name="ciPaymentMode" value="card"> Card Payment</span>
+                  <span class="radio-line"><input type="radio" name="ciPaymentMode" value="upi"> UPI</span>
+                  <span class="radio-line"><input type="radio" name="ciPaymentMode" value="card"> Card</span>
                 </label>
               </div>
             </div>
@@ -342,6 +342,10 @@ async function checkinGuest() {
     alert('Please select at least one room.');
     return;
   }
+  if (!document.getElementById('ciName').value.trim()) {
+    alert('Please enter guest name.');
+    return;
+  }
 
   const checkInAt = `${document.getElementById('ciDate').value}T${document.getElementById('ciTime').value || '00:00'}`;
   const primaryRoomId = roomIds[0];
@@ -398,9 +402,12 @@ async function checkinGuest() {
       }
     : basePayload;
 
-  const { guest } = await api.post(endpoint, payload);
-
-  showGuestRegistrationCard(guest);
+  try {
+    const { guest } = await api.post(endpoint, payload);
+    showGuestRegistrationCard(guest);
+  } catch (error) {
+    alert(error.message || 'Check-in could not be completed. Please check room, guest and payment details.');
+  }
 }
 
 function renderGuestRows(guests, options = {}) {

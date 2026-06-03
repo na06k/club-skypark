@@ -77,7 +77,11 @@ function showReceiptForm() {
       <input id="receiptVenue" placeholder="Venue / Hall / Room">
       <input id="receiptPaid" type="number" placeholder="Paid Amount">
       <input id="receiptDiscount" type="number" placeholder="Discount">
-      <input id="receiptMethod" placeholder="Payment Method" value="cash">
+      <select id="receiptMethod">
+        <option value="cash">Cash</option>
+        <option value="upi">UPI</option>
+        <option value="card">Card</option>
+      </select>
     </div>
     <textarea id="receiptItems" rows="5" placeholder="Items one per line: Description, Quantity, Rate, GST%"></textarea>
     <textarea id="receiptNotes" rows="2" placeholder="Notes"></textarea><br>
@@ -145,8 +149,10 @@ async function viewReceipt(id) {
             <div class="receipt-hand-line"><span>Receipt No</span><span>${receiptSafe(receipt.receipt_number)}</span></div>
             <div class="receipt-hand-line"><span>Guest Name</span><span>${receiptSafe(receipt.customer_name)}</span></div>
             <div class="receipt-hand-line"><span>Address</span><span>${receiptSafe(receipt.notes || '')}</span></div>
-            <div class="receipt-hand-line"><span>Advance Amount</span><span>${rs(receipt.grand_total)}</span></div>
+            <div class="receipt-hand-line"><span>Booking Amount</span><span>${rs(receipt.grand_total)}</span></div>
             <div class="receipt-hand-line"><span>Paid Amount</span><span>${rs(receipt.paid_amount)}</span></div>
+            <div class="receipt-hand-line"><span>Advance Amount</span><span>${rs(receipt.paid_amount)}</span></div>
+            <div class="receipt-hand-line"><span>Balance / Due Amount</span><span>${rs(receipt.balance_amount)}</span></div>
           </div>
 
           <table class="bill-table" style="margin-top:32px">
@@ -154,7 +160,7 @@ async function viewReceipt(id) {
             <tbody>${itemRows}</tbody>
           </table>
 
-          <h3 style="text-align:right;margin:18px 0 0">Balance: ${rs(receipt.balance_amount)}</h3>
+          <h3 style="text-align:right;margin:18px 0 0">Balance / Due: ${rs(receipt.balance_amount)}</h3>
 
           <footer class="receipt-doc-footer">
             <section class="terms">
@@ -190,6 +196,7 @@ function reportDocumentHeader(title, period) {
   return `
     <header class="report-doc-header">
       <div>
+        <img src="images/clublogo.jpg" alt="Club Skypark" class="report-logo" onerror="this.style.display='none'">
         <h1>CLUB SKYPARK</h1>
         <p>Hotel & Resort PMS Report</p>
       </div>
@@ -199,6 +206,110 @@ function reportDocumentHeader(title, period) {
       </div>
     </header>
   `;
+}
+
+async function loadNightAudit(date = todayValue()) {
+  const main = document.getElementById('main-content');
+  try {
+    const report = await api.get(`/reports/night-audit?date=${date}`);
+    const summary = report.summary || {};
+    const modes = summary.payment_modes || {};
+    main.innerHTML = `
+      <section class="document-screen">
+        <div class="print-toolbar">
+          <input id="nightAuditDate" type="date" value="${report.date}">
+          <button class="dark-action" onclick="loadNightAudit(document.getElementById('nightAuditDate').value)">Load</button>
+          ${window.pmsCan?.('reports.close_day') ? '<button class="dark-action" onclick="closeNightAuditDay()">Close Day</button>' : ''}
+          ${window.pmsCan?.('reports.export') ? '<button class="dark-action" onclick="saveCurrentDocumentAsPdf()">Save PDF</button><button class="green-action" onclick="printCurrentDocument()">Print Night Audit</button>' : ''}
+        </div>
+
+        <div class="print-area report-document wide-report-document">
+          <div class="doc-border report-border">
+            <section class="report-page">
+              ${reportDocumentHeader('Night Audit', displayDate(report.date))}
+              <section class="report-summary-grid">
+                ${reportSummaryCards({
+                  total_revenue: summary.total_revenue,
+                  total_checkins: summary.total_checkins,
+                  total_checkout_amount: summary.total_checkout_amount,
+                  expenses: summary.expenses,
+                  subtotal: summary.subtotal,
+                  due_amount: summary.due_amount
+                }, {
+                  total_revenue: 'Total Revenue Today',
+                  total_checkins: 'Total Check-ins Today',
+                  total_checkout_amount: 'Total Checkout Amount',
+                  expenses: 'Expenses / Cash Out',
+                  subtotal: 'Subtotal Revenue',
+                  due_amount: 'Due Amount'
+                })}
+              </section>
+              <h2>Payment Mode Summary</h2>
+              <table class="report-table"><thead><tr><th>Cash</th><th>UPI</th><th>Card</th></tr></thead><tbody>
+                <tr><td>${rs(modes.cash)}</td><td>${rs(modes.upi)}</td><td>${rs(modes.card)}</td></tr>
+              </tbody></table>
+            </section>
+
+            <section class="report-section report-page">
+              <h2>Check-in Rooms</h2>
+              <table class="report-table"><thead><tr><th>Guest Name</th><th>Room No.</th><th>Room Category</th><th>Check-in Date</th><th>Mobile No.</th><th>Amount</th><th>Mode</th></tr></thead><tbody>
+                ${tableOrEmpty((report.checkin_rooms || []).map((room) => `<tr><td>${receiptSafe(room.guest_name)}</td><td>${receiptSafe(room.room_no)}</td><td>${receiptSafe(room.room_category)}</td><td>${displayDateTime(room.check_in_date)}</td><td>${receiptSafe(room.mobile_no)}</td><td>${rs(room.amount)}</td><td>${receiptSafe(room.payment_mode || '-')}</td></tr>`))}
+              </tbody></table>
+            </section>
+
+            <section class="report-section report-page">
+              <h2>Check-out Rooms</h2>
+              <table class="report-table"><thead><tr><th>Guest Name</th><th>Room No.</th><th>Room Category</th><th>Check-out Date</th><th>Mobile No.</th><th>Amount</th><th>Mode</th></tr></thead><tbody>
+                ${tableOrEmpty((report.checkout_rooms || []).map((room) => `<tr><td>${receiptSafe(room.guest_name)}</td><td>${receiptSafe(room.room_no)}</td><td>${receiptSafe(room.room_category)}</td><td>${displayDateTime(room.check_out_date)}</td><td>${receiptSafe(room.mobile_no)}</td><td>${rs(room.amount)}</td><td>${receiptSafe(room.payment_mode || '-')}</td></tr>`))}
+              </tbody></table>
+            </section>
+
+            <section class="report-section report-page">
+              <h2>Continuing Rooms</h2>
+              <table class="report-table"><thead><tr><th>Guest Name</th><th>Room No.</th><th>Room Category</th><th>Check-in Date</th><th>Mobile No.</th></tr></thead><tbody>
+                ${tableOrEmpty((report.continuing_rooms || []).map((room) => `<tr><td>${receiptSafe(room.guest_name)}</td><td>${receiptSafe(room.room_no)}</td><td>${receiptSafe(room.room_category)}</td><td>${displayDateTime(room.check_in_date)}</td><td>${receiptSafe(room.mobile_no)}</td></tr>`))}
+              </tbody></table>
+            </section>
+
+            <section class="report-section report-page">
+              <h2>Restaurant Orders Summary</h2>
+              <table class="report-table"><thead><tr><th>Table / Room</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody>
+                ${tableOrEmpty((report.restaurant_orders_summary || []).map((order) => `<tr><td>${receiptSafe(order.table_number)}</td><td>${receiptSafe(order.items)}</td><td>${rs(order.total)}</td><td>${receiptSafe(order.status)}</td></tr>`))}
+              </tbody></table>
+            </section>
+
+            <section class="report-section report-page">
+              <h2>Room Food Summary</h2>
+              <table class="report-table"><thead><tr><th>Room No.</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody>
+                ${tableOrEmpty((report.room_food_summary || []).map((order) => `<tr><td>${receiptSafe(order.room_no)}</td><td>${receiptSafe(order.items)}</td><td>${rs(order.total)}</td><td>${receiptSafe(order.status)}</td></tr>`))}
+              </tbody></table>
+            </section>
+
+            <section class="report-section report-page">
+              <h2>Expenses / Cash Out</h2>
+              <table class="report-table"><thead><tr><th>Date</th><th>Reason</th><th>Mode</th><th>Amount</th></tr></thead><tbody>
+                ${tableOrEmpty((report.expenses_list || []).map((entry) => `<tr><td>${displayDate(entry.entry_date || entry.created_at)}</td><td>${receiptSafe(entry.description)}</td><td>${receiptSafe(entry.payment_method || '-')}</td><td>${rs(entry.amount)}</td></tr>`))}
+              </tbody></table>
+            </section>
+          </div>
+        </div>
+      </section>`;
+  } catch (error) {
+    main.innerHTML = `<p>${error.message}</p>`;
+  }
+}
+
+async function closeNightAuditDay() {
+  const field = document.getElementById('nightAuditDate');
+  if (!field) return;
+  try {
+    const { closing } = await api.post('/reports/daily/close', { date: field.value });
+    const summary = closing.summary || {};
+    alert(`Day closed.\nRevenue: ${rs(summary.total_revenue)}\nBookings: ${summary.total_bookings || 0}\nCheck-ins: ${summary.checkins || 0}\nCheck-outs: ${summary.checkouts || 0}\nExpenses: ${rs(summary.expenses)}\nDue: ${rs(summary.due_amount)}`);
+    loadNightAudit(field.value);
+  } catch (error) {
+    alert(error.message || 'Day could not be closed.');
+  }
 }
 
 async function loadDailyReport(date = todayValue()) {
@@ -229,7 +340,11 @@ async function loadDailyReport(date = todayValue()) {
                 restaurant_orders: 'Restaurant Orders',
                 stock_updates: 'Stock Updates',
                 receipt_total: 'Receipt Total',
-                cash_received: 'Cash Received'
+                cash_received: 'Cash Received',
+                expenses_total: 'Expenses / Cash Out',
+                payment_cash: 'Cash Collection',
+                payment_upi: 'UPI Collection',
+                payment_card: 'Card Collection'
               })}
             </section>
 
@@ -285,8 +400,13 @@ async function loadDailyReport(date = todayValue()) {
 
 async function closeDailyReport() {
   if (!window.pmsCan?.('reports.close_day')) return;
-  await api.post('/reports/daily/close', { date: document.getElementById('dailyDate').value });
-  alert('Daily report closed.');
+  try {
+    const { closing } = await api.post('/reports/daily/close', { date: document.getElementById('dailyDate').value });
+    const summary = closing.summary || {};
+    alert(`Day closed.\nRevenue: ${rs(summary.total_revenue)}\nBookings: ${summary.total_bookings || 0}\nCheck-ins: ${summary.checkins || 0}\nCheck-outs: ${summary.checkouts || 0}\nExpenses: ${rs(summary.expenses)}\nDue: ${rs(summary.due_amount)}`);
+  } catch (error) {
+    alert(error.message || 'Day could not be closed.');
+  }
 }
 
 async function loadStore() {
@@ -377,10 +497,10 @@ async function loadReservations() {
         ${window.pmsCan?.('bookings.create') ? '<button onclick="showReservationForm()">+ Reserve Room</button>' : ''}
         ${window.pmsCan?.('bookings.bulk') ? '<button onclick="showBulkReservationForm()">+ Bulk Reserve Rooms</button>' : ''}
       </div>
-      <table><tr><th>Guest</th><th>Room</th><th>Dates</th><th>ETA</th><th>Group</th><th>Total</th><th>Status</th><th>Action</th></tr>
+      <table><tr><th>Guest</th><th>Room / Category</th><th>Dates</th><th>ETA</th><th>Group</th><th>Total</th><th>Status</th><th>Action</th></tr>
         ${tableOrEmpty(reservations.map((r) => `<tr>
           <td>${r.guest_name}<br>${r.guest_phone}</td>
-          <td>${r.room_number || r.room_name || '-'}</td>
+          <td>${r.room_number ? `${r.room_number} (${r.room_type || r.room_name || '-'})` : (r.room_name || '-')}</td>
           <td>${displayDate(r.check_in)} to ${displayDate(r.check_out)}</td>
           <td>${r.estimated_checkin_time || '-'}</td>
           <td>${r.bulk_group_id || '-'}</td>
@@ -600,9 +720,300 @@ function showLedgerForm() {
     <select id="ledgerType"><option value="credit">Credit</option><option value="debit">Debit</option></select>
     <input id="ledgerDesc" placeholder="Description">
     <input id="ledgerAmount" type="number" placeholder="Amount">
-    <input id="ledgerMethod" placeholder="Payment Method" value="cash"><br>
+    <select id="ledgerMethod">
+      <option value="cash">Cash</option>
+      <option value="upi">UPI</option>
+      <option value="card">Card</option>
+    </select><br>
     <button onclick="saveLedgerEntry()">Save</button>
     <button onclick="loadLedger()">Cancel</button>`;
+}
+
+async function loadExpenses(date = todayValue()) {
+  const main = document.getElementById('main-content');
+  try {
+    const { entries, summary } = await api.get(`/ledger?date=${date}`);
+    const expenses = entries.filter((entry) => entry.type === 'debit');
+    main.innerHTML = `
+      <section class="panel">
+        <div class="module-title-row">
+          <h1>Expenses / Cash Out</h1>
+          ${window.pmsCan?.('ledger.create') ? '<button onclick="showExpenseForm()">+ Add Cash Out</button>' : ''}
+        </div>
+        <div class="date-row compact-date-row">
+          <input id="expenseDate" type="date" value="${date}">
+          <button onclick="loadExpenses(document.getElementById('expenseDate').value)">Search</button>
+        </div>
+        <div class="report-summary-grid three">
+          <article><span>Today Cash Out</span><strong>${rs(summary.debit)}</strong></article>
+          <article><span>Cash In</span><strong>${rs(summary.credit)}</strong></article>
+          <article><span>Net Balance</span><strong>${rs(summary.balance)}</strong></article>
+        </div>
+        <table class="checkin-report-table">
+          <thead><tr><th>Date</th><th>Reason</th><th>Payment Mode</th><th>Amount</th></tr></thead>
+          <tbody>${tableOrEmpty(expenses.map((entry) => `<tr><td>${displayDate(entry.entry_date || entry.created_at)}</td><td>${receiptSafe(entry.description)}</td><td>${receiptSafe(entry.payment_method || '-')}</td><td>${rs(entry.amount)}</td></tr>`))}</tbody>
+        </table>
+      </section>`;
+  } catch (error) {
+    main.innerHTML = `<p>${error.message}</p>`;
+  }
+}
+
+function showExpenseForm() {
+  if (!window.pmsCan?.('ledger.create')) {
+    alert('You do not have permission to add expenses.');
+    return;
+  }
+  document.getElementById('main-content').innerHTML = `
+    <section class="panel">
+      <h1>Add Expenses / Cash Out</h1>
+      <div class="form-grid">
+        <input id="expenseEntryDate" type="date" value="${todayValue()}">
+        <input id="expenseReason" placeholder="Reason">
+        <input id="expenseAmount" type="number" min="0" placeholder="Amount">
+        <select id="expenseMethod">
+          <option value="cash">Cash</option>
+          <option value="upi">UPI</option>
+          <option value="card">Card</option>
+        </select>
+      </div>
+      <button onclick="saveExpenseEntry()">Save Cash Out</button>
+      <button onclick="loadExpenses()">Cancel</button>
+    </section>`;
+}
+
+async function saveExpenseEntry() {
+  if (!window.pmsCan?.('ledger.create')) return;
+  const amount = Number(document.getElementById('expenseAmount').value || 0);
+  const reason = document.getElementById('expenseReason').value.trim();
+  if (!reason || amount <= 0) {
+    alert('Please enter expense reason and amount.');
+    return;
+  }
+  await api.post('/ledger', {
+    entry_date: document.getElementById('expenseEntryDate').value,
+    type: 'debit',
+    description: reason,
+    amount,
+    payment_method: document.getElementById('expenseMethod').value
+  });
+  loadExpenses(document.getElementById('expenseEntryDate').value);
+}
+
+function attendanceStatusOptions(selected = 'Present') {
+  return ['Present', 'Absent', 'Half Day', 'Paid Leave', 'Unpaid Leave', 'Week Off']
+    .map((status) => `<option value="${status}" ${status === selected ? 'selected' : ''}>${status}</option>`)
+    .join('');
+}
+
+function attendanceQueryFromFilters() {
+  const date = document.getElementById('attendanceFilterDate')?.value || '';
+  const month = document.getElementById('attendanceFilterMonth')?.value || '';
+  const staffName = document.getElementById('attendanceFilterStaff')?.value || '';
+  const department = document.getElementById('attendanceFilterDepartment')?.value || '';
+  const status = document.getElementById('attendanceFilterStatus')?.value || '';
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  else if (month) params.set('month', month);
+  if (staffName) params.set('staffName', staffName);
+  if (department) params.set('department', department);
+  if (status) params.set('status', status);
+  return params.toString();
+}
+
+function attendanceMonthValue(value = todayValue()) {
+  return String(value).slice(0, 7);
+}
+
+async function loadStaffAttendance(date = todayValue()) {
+  const main = document.getElementById('main-content');
+  try {
+    const month = attendanceMonthValue(date);
+    const [{ attendance }, summaryResponse] = await Promise.all([
+      api.get(`/attendance?month=${month}`),
+      api.get(`/attendance/summary?month=${month}`)
+    ]);
+    main.innerHTML = `
+      <section class="panel attendance-page">
+        <div class="module-title-row">
+          <h1>Attendance</h1>
+          <div class="table-actions">
+            ${window.pmsCan?.('staff.attendance') ? '<button onclick="showAttendanceForm()">+ Add Attendance</button>' : ''}
+            <button onclick="exportAttendanceCsv()">Export CSV</button>
+            <button onclick="printAttendanceReport()">Print Monthly Report</button>
+          </div>
+        </div>
+        <div class="form-grid attendance-filter-grid">
+          <label>Filter by Date<input id="attendanceFilterDate" type="date"></label>
+          <label>Filter by Month<input id="attendanceFilterMonth" type="month" value="${month}"></label>
+          <label>Staff Name<input id="attendanceFilterStaff" placeholder="Staff name"></label>
+          <label>Department<input id="attendanceFilterDepartment" placeholder="Department"></label>
+          <label>Status<select id="attendanceFilterStatus"><option value="">All Status</option>${attendanceStatusOptions('')}</select></label>
+          <button onclick="filterAttendance()">Search</button>
+        </div>
+
+        <div id="attendanceTableMount">${renderAttendanceTable(attendance || [])}</div>
+
+        <h2>Monthly Summary</h2>
+        <div id="attendanceSummaryMount">${renderAttendanceSummary(summaryResponse.summary || [])}</div>
+      </section>`;
+  } catch (error) {
+    main.innerHTML = `<p>${error.message}</p>`;
+  }
+}
+
+function renderAttendanceTable(rows) {
+  window.__attendanceRows = rows || [];
+  return `
+    <table class="checkin-report-table">
+      <thead><tr><th>Date</th><th>Staff Name</th><th>Staff ID</th><th>Department</th><th>Shift</th><th>In Time</th><th>Out Time</th><th>Status</th><th>Total Hours</th><th>Remarks</th><th>Actions</th></tr></thead>
+      <tbody>${tableOrEmpty((rows || []).map((row) => `<tr>
+        <td>${displayDate(row.date)}</td>
+        <td>${receiptSafe(row.staffName)}</td>
+        <td>${receiptSafe(row.staffId)}</td>
+        <td>${receiptSafe(row.department)}</td>
+        <td>${receiptSafe(row.shift)}</td>
+        <td>${receiptSafe(row.inTime || '-')}</td>
+        <td>${receiptSafe(row.outTime || '-')}</td>
+        <td>${receiptSafe(row.status)}</td>
+        <td>${receiptSafe(row.totalHours || 0)}</td>
+        <td>${receiptSafe(row.remarks || '-')}</td>
+        <td><button onclick="showAttendanceForm('${row.id}')">Edit</button><button class="red-action" onclick="deleteAttendance('${row.id}')">Delete</button></td>
+      </tr>`))}</tbody>
+    </table>`;
+}
+
+function renderAttendanceSummary(rows) {
+  return `
+    <table class="checkin-report-table">
+      <thead><tr><th>Staff Name</th><th>Staff ID</th><th>Department</th><th>Present Days</th><th>Absent Days</th><th>Half Days</th><th>Paid Leaves</th><th>Unpaid Leaves</th><th>Week Offs</th><th>Total Working Hours</th></tr></thead>
+      <tbody>${tableOrEmpty((rows || []).map((row) => `<tr>
+        <td>${receiptSafe(row.staffName)}</td>
+        <td>${receiptSafe(row.staffId)}</td>
+        <td>${receiptSafe(row.department)}</td>
+        <td>${row.presentDays || 0}</td>
+        <td>${row.absentDays || 0}</td>
+        <td>${row.halfDays || 0}</td>
+        <td>${row.paidLeaves || 0}</td>
+        <td>${row.unpaidLeaves || 0}</td>
+        <td>${row.weekOffs || 0}</td>
+        <td>${row.totalWorkingHours || 0}</td>
+      </tr>`), 'No monthly summary found.')}</tbody>
+    </table>`;
+}
+
+async function filterAttendance() {
+  const query = attendanceQueryFromFilters();
+  const month = document.getElementById('attendanceFilterMonth')?.value || todayValue().slice(0, 7);
+  const [rows, summary] = await Promise.all([
+    api.get(`/attendance?${query}`),
+    api.get(`/attendance/summary?month=${month}&staffName=${encodeURIComponent(document.getElementById('attendanceFilterStaff')?.value || '')}&department=${encodeURIComponent(document.getElementById('attendanceFilterDepartment')?.value || '')}&status=${encodeURIComponent(document.getElementById('attendanceFilterStatus')?.value || '')}`)
+  ]);
+  document.getElementById('attendanceTableMount').innerHTML = renderAttendanceTable(rows.attendance || []);
+  document.getElementById('attendanceSummaryMount').innerHTML = renderAttendanceSummary(summary.summary || []);
+}
+
+function showAttendanceForm(id = '') {
+  if (!window.pmsCan?.('staff.attendance')) return;
+  const record = (window.__attendanceRows || []).find((row) => String(row.id) === String(id)) || {};
+  document.getElementById('main-content').innerHTML = `
+    <section class="panel">
+      <h1>${id ? 'Edit' : 'Add'} Attendance</h1>
+      <div class="form-grid">
+        <input id="attendanceId" type="hidden" value="${receiptSafe(id)}">
+        <label>Date<input id="attendanceEntryDate" type="date" value="${record.date || todayValue()}"></label>
+        <label>Staff Name<input id="attendanceStaffName" placeholder="Staff name" value="${receiptSafe(record.staffName || '')}"></label>
+        <label>Staff ID<input id="attendanceStaffId" placeholder="EMP001" value="${receiptSafe(record.staffId || '')}"></label>
+        <label>Department<input id="attendanceDepartment" placeholder="Reception" value="${receiptSafe(record.department || '')}"></label>
+        <label>Shift<input id="attendanceShift" placeholder="Morning" value="${receiptSafe(record.shift || 'Morning')}"></label>
+        <label>In Time<input id="attendanceIn" type="time" value="${receiptSafe(record.inTime || '')}"></label>
+        <label>Out Time<input id="attendanceOut" type="time" value="${receiptSafe(record.outTime || '')}"></label>
+        <label>Status<select id="attendanceStatus">${attendanceStatusOptions(record.status || 'Present')}</select></label>
+        <label>Total Hours<input id="attendanceTotalHours" type="number" value="${receiptSafe(record.totalHours || 0)}" readonly></label>
+        <label>Remarks<input id="attendanceRemarks" placeholder="Remarks" value="${receiptSafe(record.remarks || '')}"></label>
+      </div>
+      <button onclick="saveStaffAttendance()">${id ? 'Save Changes' : 'Save Attendance'}</button>
+      <button onclick="loadStaffAttendance()">Cancel</button>
+    </section>`;
+  ['attendanceIn', 'attendanceOut', 'attendanceStatus'].forEach((inputId) => {
+    document.getElementById(inputId)?.addEventListener('change', updateAttendanceTotalHours);
+  });
+  updateAttendanceTotalHours();
+}
+
+function calculateBrowserAttendanceHours() {
+  const status = document.getElementById('attendanceStatus')?.value || 'Present';
+  if (['Absent', 'Paid Leave', 'Unpaid Leave', 'Week Off'].includes(status)) return 0;
+  const inTime = document.getElementById('attendanceIn')?.value;
+  const outTime = document.getElementById('attendanceOut')?.value;
+  if (!inTime || !outTime) return 0;
+  const [ih, im] = inTime.split(':').map(Number);
+  const [oh, om] = outTime.split(':').map(Number);
+  let start = ih * 60 + im;
+  let end = oh * 60 + om;
+  if (end < start) end += 1440;
+  return Math.round(((end - start) / 60 + Number.EPSILON) * 100) / 100;
+}
+
+function updateAttendanceTotalHours() {
+  const field = document.getElementById('attendanceTotalHours');
+  if (field) field.value = calculateBrowserAttendanceHours();
+}
+
+async function saveStaffAttendance() {
+  if (!window.pmsCan?.('staff.attendance')) return;
+  const id = document.getElementById('attendanceId').value;
+  const staffName = document.getElementById('attendanceStaffName').value.trim();
+  const staffId = document.getElementById('attendanceStaffId').value.trim();
+  const department = document.getElementById('attendanceDepartment').value.trim();
+  if (!staffName || !staffId || !department || !document.getElementById('attendanceEntryDate').value) {
+    alert('Date, staff name, staff ID and department are required.');
+    return;
+  }
+  const payload = {
+    staffName,
+    staffId,
+    department,
+    date: document.getElementById('attendanceEntryDate').value,
+    shift: document.getElementById('attendanceShift').value,
+    status: document.getElementById('attendanceStatus').value,
+    inTime: document.getElementById('attendanceIn').value,
+    outTime: document.getElementById('attendanceOut').value,
+    remarks: document.getElementById('attendanceRemarks').value
+  };
+  try {
+    if (id) await api.put(`/attendance/${id}`, payload);
+    else await api.post('/attendance', payload);
+  } catch (error) {
+    alert(error.message || 'Attendance could not be saved.');
+    return;
+  }
+  loadStaffAttendance(document.getElementById('attendanceEntryDate').value);
+}
+
+async function deleteAttendance(id) {
+  if (!window.pmsCan?.('staff.attendance')) return;
+  if (!confirm('Delete this attendance record?')) return;
+  await api.delete(`/attendance/${id}`);
+  filterAttendance();
+}
+
+function exportAttendanceCsv() {
+  const rows = window.__attendanceRows || [];
+  const header = ['Date', 'Staff Name', 'Staff ID', 'Department', 'Shift', 'In Time', 'Out Time', 'Status', 'Total Hours', 'Remarks'];
+  const csv = [header, ...rows.map((row) => [row.date, row.staffName, row.staffId, row.department, row.shift, row.inTime, row.outTime, row.status, row.totalHours, row.remarks])]
+    .map((cols) => cols.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `club-skypark-attendance-${todayValue()}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function printAttendanceReport() {
+  printCurrentDocument();
 }
 
 async function saveLedgerEntry() {

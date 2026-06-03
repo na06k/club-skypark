@@ -1289,6 +1289,14 @@ body.dashboard-mode #main-content {
   border-bottom: 2px solid #222;
 }
 
+.report-logo {
+  display: block;
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
 .report-doc-header h1 {
   margin: 0;
   font-size: 26px;
@@ -1337,6 +1345,28 @@ body.dashboard-mode #main-content {
   padding: 11px 12px;
   border: 1px solid #d8d8d8;
   background: #fafafa;
+}
+
+.report-page {
+  page-break-after: always;
+  break-after: page;
+  padding-bottom: 18px;
+}
+
+.report-page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+.attendance-page .attendance-filter-grid {
+  align-items: end;
+  margin: 14px 0 18px;
+}
+
+.attendance-page .table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .report-summary-grid span {
@@ -2961,6 +2991,12 @@ body.pms-mode .pms-floor-head {
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 10px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
 }
 
 body.pms-mode .pms-floor-head strong {
@@ -2978,6 +3014,23 @@ body.pms-mode .pms-floor-room-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
   gap: 8px;
+}
+
+body.pms-mode .pms-floor-room-grid.collapsed {
+  display: none;
+}
+
+body.pms-mode .floor-arrow {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  border: 1px solid var(--theme-line);
+  border-radius: 50%;
+  color: var(--theme-gold-dark);
+  font-size: 12px;
 }
 
 body.pms-mode .pms-floor-room-grid .pms-room-tile {

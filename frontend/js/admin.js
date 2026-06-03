@@ -13,6 +13,9 @@ const moduleAccess = {
   restaurant: ['restaurant.view'],
   receipts: ['receipts.view'],
   dailyReport: ['reports.daily'],
+  nightAudit: ['reports.daily', 'reports.analytics'],
+  expenses: ['ledger.view', 'ledger.create'],
+  attendance: ['staff.attendance'],
   store: ['store.view'],
   reservations: ['bookings.view', 'bookings.bulk'],
   items: ['items.view', 'restaurant.view'],
@@ -133,12 +136,14 @@ function buildSidebar(user) {
     </div>
     <ul class="sidebar-menu">
       ${sidebarLink('dashboard', 'Dashboard')}
-      ${sidebarLink('bookings', 'Booking Management')}
+      ${sidebarLink('bookings', 'Reservation Management')}
       ${sidebarLink('rooms', 'Room Management')}
       ${sidebarGroup('checkinSubmenu', 'Check In', 'IN', checkinLinks)}
       ${sidebarGroup('checkoutSubmenu', 'Check Out', 'OUT', checkoutLinks)}
       ${sidebarLink('receipts', 'Receipts / Advance')}
-      ${sidebarLink('dailyReport', 'Daily Report')}
+      ${sidebarLink('nightAudit', 'Night Audit / Close Day')}
+      ${sidebarLink('expenses', 'Expenses / Cash Out')}
+      ${sidebarLink('attendance', 'Attendance')}
       ${sidebarLink('reservations', 'Reservations Calendar')}
       ${sidebarLink('payments', 'Billing / Payments')}
       ${sidebarLink('store', 'Store Management')}
@@ -169,6 +174,9 @@ function getModuleLoader(moduleName) {
     restaurant: window.loadRestaurant,
     receipts: window.loadReceipts,
     dailyReport: window.loadDailyReport,
+    nightAudit: window.loadNightAudit,
+    expenses: window.loadExpenses,
+    attendance: window.loadStaffAttendance,
     store: window.loadStore,
     reservations: window.loadReservations,
     items: window.loadItems,
@@ -197,7 +205,9 @@ function firstAccessibleModule() {
     'checkoutList',
     'restaurant',
     'receipts',
-    'dailyReport',
+    'nightAudit',
+    'expenses',
+    'attendance',
     'reservations',
     'payments',
     'store',

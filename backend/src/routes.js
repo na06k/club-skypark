@@ -1622,6 +1622,15 @@ router.get('/reports/daily', requireAnyPermission('reports.daily', 'dashboard.vi
   const reservations = store.all('bookings').filter((booking) => dateOnly(booking.created_at) === reportDate || dateOnly(booking.check_in) === reportDate).map(withRoom);
   const checkins = guests.filter((guest) => dateOnly(guest.check_in_date) === reportDate);
   const checkouts = guests.filter((guest) => guest.status !== 'checkout_cancelled' && dateOnly(guest.check_out_date) === reportDate);
+  const credits = ledger.filter((entry) => entry.type === 'credit');
+  const debits = ledger.filter((entry) => entry.type === 'debit');
+  const paymentModes = credits.reduce((summary, entry) => {
+    const method = String(entry.payment_method || 'cash').toLowerCase();
+    if (method.includes('upi') || method.includes('online')) summary.upi += Number(entry.amount || 0);
+    else if (method.includes('card')) summary.card += Number(entry.amount || 0);
+    else summary.cash += Number(entry.amount || 0);
+    return summary;
+  }, { cash: 0, upi: 0, card: 0 });
 
   res.json({
     date: reportDate,
@@ -1636,7 +1645,11 @@ router.get('/reports/daily', requireAnyPermission('reports.daily', 'dashboard.vi
       restaurant_orders: orders.length,
       stock_updates: movements.length,
       receipt_total: money(receipts.reduce((sum, receipt) => sum + Number(receipt.grand_total), 0)),
-      cash_received: money(ledger.filter((entry) => entry.type === 'credit').reduce((sum, entry) => sum + Number(entry.amount), 0))
+      cash_received: money(credits.reduce((sum, entry) => sum + Number(entry.amount), 0)),
+      expenses_total: money(debits.reduce((sum, entry) => sum + Number(entry.amount), 0)),
+      payment_cash: money(paymentModes.cash),
+      payment_upi: money(paymentModes.upi),
+      payment_card: money(paymentModes.card)
     },
     checkins,
     checkouts,
@@ -1648,6 +1661,99 @@ router.get('/reports/daily', requireAnyPermission('reports.daily', 'dashboard.vi
   });
 });
 
+router.get('/reports/night-audit', requireAnyPermission('reports.daily', 'reports.analytics', 'dashboard.view'), (req, res) => {
+  const reportDate = req.query.date || today();
+  const rooms = store.all('rooms');
+  const bookings = store.all('bookings');
+  const guests = store.all('guests').map((guest) => {
+    const room = rooms.find((item) => String(item.id) === String(guest.room_id)) || {};
+    return { ...guest, room_number: guest.room_number || room.room_number, room_type: guest.room_type || room.room_type };
+  });
+  const ledger = store.all('ledger_entries').filter((entry) => dateOnly(entry.entry_date || entry.created_at) === reportDate);
+  const credits = ledger.filter((entry) => entry.type === 'credit');
+  const debits = ledger.filter((entry) => entry.type === 'debit');
+  const orders = store.all('restaurant_orders').filter((order) => dateOnly(order.created_at) === reportDate);
+  const checkins = guests.filter((guest) => dateOnly(guest.check_in_date) === reportDate);
+  const checkouts = guests.filter((guest) => guest.status !== 'checkout_cancelled' && dateOnly(guest.check_out_date) === reportDate);
+  const checkinRooms = checkins.map((guest) => {
+    const booking = bookings.find((item) => String(item.id) === String(guest.booking_id)) || {};
+    return {
+      guest_name: guest.name,
+      room_no: guest.room_number || '-',
+      room_category: guest.room_type || '-',
+      check_in_date: guest.check_in_date,
+      mobile_no: guest.phone || '',
+      amount: money(booking.total_price || guest.room_rate || 0),
+      payment_mode: guest.payment_mode || booking.payment_method || '-'
+    };
+  });
+  const checkoutRooms = checkouts.map((guest) => ({
+    guest_name: guest.name,
+    room_no: guest.room_number || '-',
+    room_category: guest.room_type || '-',
+    check_out_date: guest.check_out_date,
+    mobile_no: guest.phone || '',
+    amount: money(guest.checkout_pay_after_discount || guest.checkout_total_bill_amount || 0),
+    payment_mode: guest.checkout_payment_mode || '-'
+  }));
+  const continuingRooms = guests.filter((guest) => !guest.check_out_date && guest.status !== 'cancelled').map((guest) => ({
+    guest_name: guest.name,
+    room_no: guest.room_number || '-',
+    room_category: guest.room_type || '-',
+    check_in_date: guest.check_in_date,
+    mobile_no: guest.phone || ''
+  }));
+  const paymentModes = credits.reduce((summary, entry) => {
+    const method = String(entry.payment_method || 'cash').toLowerCase();
+    if (method.includes('upi') || method.includes('online')) summary.upi += Number(entry.amount || 0);
+    else if (method.includes('card')) summary.card += Number(entry.amount || 0);
+    else summary.cash += Number(entry.amount || 0);
+    return summary;
+  }, { cash: 0, upi: 0, card: 0 });
+  const checkoutAmountToday = money(checkouts.reduce((sum, guest) => sum + Number(guest.checkout_pay_after_discount || guest.checkout_total_bill_amount || 0), 0));
+  const totalRevenue = money(credits.reduce((sum, entry) => sum + Number(entry.amount || 0), 0));
+  const expenses = money(debits.reduce((sum, entry) => sum + Number(entry.amount || 0), 0));
+  const dueAmount = money(bookings.reduce((sum, booking) => sum + Number(booking.balance_amount || 0), 0));
+  const roomFoodSummary = orders
+    .filter((order) => order.guest_id || order.room_id || order.table_number)
+    .map((order) => ({
+      room_no: order.table_number || order.room_number || '-',
+      items: (order.items || []).map((item) => `${item.quantity || 1} x ${item.name}`).join(', '),
+      total: money(order.total || 0),
+      status: order.status || '-'
+    }));
+
+  res.json({
+    date: reportDate,
+    summary: {
+      total_revenue: totalRevenue,
+      total_checkins: checkins.length,
+      total_checkout_amount: checkoutAmountToday,
+      total_bookings: bookings.filter((booking) => dateOnly(booking.created_at) === reportDate || dateOnly(booking.check_in) === reportDate).length,
+      total_checkouts: checkouts.length,
+      expenses,
+      subtotal: money(totalRevenue - expenses),
+      due_amount: dueAmount,
+      payment_modes: {
+        cash: money(paymentModes.cash),
+        upi: money(paymentModes.upi),
+        card: money(paymentModes.card)
+      }
+    },
+    checkin_rooms: checkinRooms,
+    checkout_rooms: checkoutRooms,
+    continuing_rooms: continuingRooms,
+    restaurant_orders_summary: orders.map((order) => ({
+      table_number: order.table_number || '-',
+      items: (order.items || []).map((item) => `${item.quantity || 1} x ${item.name}`).join(', '),
+      total: money(order.total || 0),
+      status: order.status || '-'
+    })),
+    room_food_summary: roomFoodSummary,
+    expenses_list: debits
+  });
+});
+
 router.post('/reports/daily/close', requirePermission('reports.close_day'), (req, res) => {
   const reportDate = req.body?.date || today();
   if (reportDate >= today()) {
@@ -1655,7 +1761,36 @@ router.post('/reports/daily/close', requirePermission('reports.close_day'), (req
   }
   const existing = store.find('daily_report_closings', (closing) => closing.date === reportDate);
   if (existing) return res.status(409).json({ error: 'Daily report already closed for this date.' });
-  const closing = store.insert('daily_report_closings', { date: reportDate, closed_by: req.user.email, closed_at: now() });
+  const ledger = store.all('ledger_entries').filter((entry) => dateOnly(entry.entry_date || entry.created_at) === reportDate);
+  const bookings = store.all('bookings').filter((booking) => dateOnly(booking.created_at) === reportDate || dateOnly(booking.check_in) === reportDate);
+  const guests = store.all('guests');
+  const checkins = guests.filter((guest) => dateOnly(guest.check_in_date) === reportDate);
+  const checkouts = guests.filter((guest) => guest.status !== 'checkout_cancelled' && dateOnly(guest.check_out_date) === reportDate);
+  const credits = ledger.filter((entry) => entry.type === 'credit');
+  const debits = ledger.filter((entry) => entry.type === 'debit');
+  const paymentModes = credits.reduce((summary, entry) => {
+    const method = String(entry.payment_method || 'cash').toLowerCase();
+    if (method.includes('upi') || method.includes('online')) summary.upi += Number(entry.amount || 0);
+    else if (method.includes('card')) summary.card += Number(entry.amount || 0);
+    else summary.cash += Number(entry.amount || 0);
+    return summary;
+  }, { cash: 0, upi: 0, card: 0 });
+  const closing = store.insert('daily_report_closings', {
+    date: reportDate,
+    closed_by: req.user.email,
+    closed_at: now(),
+    summary: {
+      total_revenue: money(credits.reduce((sum, entry) => sum + Number(entry.amount || 0), 0)),
+      total_bookings: bookings.length,
+      checkins: checkins.length,
+      checkouts: checkouts.length,
+      expenses: money(debits.reduce((sum, entry) => sum + Number(entry.amount || 0), 0)),
+      cash: money(paymentModes.cash),
+      upi: money(paymentModes.upi),
+      card: money(paymentModes.card),
+      due_amount: money(store.all('bookings').reduce((sum, booking) => sum + Number(booking.balance_amount || 0), 0))
+    }
+  });
   res.status(201).json({ closing });
 });
 
@@ -2215,6 +2350,128 @@ router.get('/guest-service-charges', requirePermission('services.view'), (req, r
 });
 
 // Staff scheduling and attendance
+const attendanceStatuses = ['Present', 'Absent', 'Half Day', 'Paid Leave', 'Unpaid Leave', 'Week Off'];
+
+function normalizeAttendanceStatus(value) {
+  const input = String(value || '').replace(/_/g, ' ').trim().toLowerCase();
+  return attendanceStatuses.find((status) => status.toLowerCase() === input) || '';
+}
+
+function calculateAttendanceHours(inTime, outTime, status) {
+  if (['Absent', 'Paid Leave', 'Unpaid Leave', 'Week Off'].includes(status)) return 0;
+  if (!inTime || !outTime) return 0;
+  const [inHours, inMinutes] = String(inTime).split(':').map(Number);
+  const [outHours, outMinutes] = String(outTime).split(':').map(Number);
+  if (![inHours, inMinutes, outHours, outMinutes].every(Number.isFinite)) return 0;
+  const start = inHours * 60 + inMinutes;
+  let end = outHours * 60 + outMinutes;
+  if (end < start) end += 24 * 60;
+  return money((end - start) / 60);
+}
+
+function attendanceRows(from, to, filters = {}) {
+  const rows = store.all('attendance').filter((row) => inRange(row.date, from, to));
+  return rows.filter((row) => {
+    if (filters.staffName && !String(row.staffName || '').toLowerCase().includes(String(filters.staffName).toLowerCase())) return false;
+    if (filters.department && String(row.department || '') !== String(filters.department)) return false;
+    if (filters.status && String(row.status || '') !== String(filters.status)) return false;
+    return true;
+  }).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(a.staffName || '').localeCompare(String(b.staffName || '')));
+}
+
+function attendanceSummary(rows) {
+  const byStaff = new Map();
+  rows.forEach((row) => {
+    const key = row.staffId || row.staffName;
+    if (!byStaff.has(key)) {
+      byStaff.set(key, {
+        staffName: row.staffName,
+        staffId: row.staffId,
+        department: row.department,
+        presentDays: 0,
+        absentDays: 0,
+        halfDays: 0,
+        paidLeaves: 0,
+        unpaidLeaves: 0,
+        weekOffs: 0,
+        totalWorkingHours: 0
+      });
+    }
+    const item = byStaff.get(key);
+    if (row.status === 'Present') item.presentDays += 1;
+    if (row.status === 'Absent') item.absentDays += 1;
+    if (row.status === 'Half Day') item.halfDays += 1;
+    if (row.status === 'Paid Leave') item.paidLeaves += 1;
+    if (row.status === 'Unpaid Leave') item.unpaidLeaves += 1;
+    if (row.status === 'Week Off') item.weekOffs += 1;
+    item.totalWorkingHours = money(item.totalWorkingHours + Number(row.totalHours || 0));
+  });
+  return Array.from(byStaff.values());
+}
+
+const attendanceSchema = z.object({
+  date: z.string().min(1),
+  staffName: z.string().min(1),
+  staffId: z.string().min(1),
+  department: z.string().min(1),
+  shift: z.string().optional().default('Morning'),
+  inTime: z.string().optional().default(''),
+  outTime: z.string().optional().default(''),
+  status: z.string().transform(normalizeAttendanceStatus).refine(Boolean, 'Invalid attendance status.'),
+  remarks: z.string().optional().default('')
+});
+
+router.get('/attendance', requirePermission('staff.attendance'), (req, res) => {
+  const date = req.query.date;
+  const month = req.query.month;
+  const from = date || (month ? `${month}-01` : (req.query.from || today()));
+  const to = date || (month ? `${month}-31` : (req.query.to || from));
+  res.json({
+    attendance: attendanceRows(from, to, {
+      staffName: req.query.staffName,
+      department: req.query.department,
+      status: req.query.status
+    })
+  });
+});
+
+router.get('/attendance/summary', requirePermission('staff.attendance'), (req, res) => {
+  const month = req.query.month || today().slice(0, 7);
+  const rows = attendanceRows(`${month}-01`, `${month}-31`, {
+    staffName: req.query.staffName,
+    department: req.query.department,
+    status: req.query.status
+  });
+  res.json({ month, summary: attendanceSummary(rows) });
+});
+
+router.post('/attendance', requirePermission('staff.attendance'), (req, res) => {
+  const parsed = attendanceSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Date, staff name, staff ID, department and valid status are required.' });
+  const exists = store.find('attendance', (row) => row.date === parsed.data.date && String(row.staffId).toLowerCase() === String(parsed.data.staffId).toLowerCase());
+  if (exists) return res.status(409).json({ error: 'Attendance already exists for this staff on this date.' });
+  const totalHours = calculateAttendanceHours(parsed.data.inTime, parsed.data.outTime, parsed.data.status);
+  const attendance = store.insert('attendance', { ...parsed.data, totalHours, createdAt: now(), updatedAt: now() });
+  res.status(201).json({ attendance });
+});
+
+router.put('/attendance/:id', requirePermission('staff.attendance'), (req, res) => {
+  const parsed = attendanceSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Date, staff name, staff ID, department and valid status are required.' });
+  const duplicate = store.find('attendance', (row) => String(row.id) !== String(req.params.id) && row.date === parsed.data.date && String(row.staffId).toLowerCase() === String(parsed.data.staffId).toLowerCase());
+  if (duplicate) return res.status(409).json({ error: 'Attendance already exists for this staff on this date.' });
+  const totalHours = calculateAttendanceHours(parsed.data.inTime, parsed.data.outTime, parsed.data.status);
+  const attendance = store.update('attendance', req.params.id, { ...parsed.data, totalHours, updatedAt: now() });
+  if (!attendance) return res.status(404).json({ error: 'Attendance record not found.' });
+  res.json({ attendance });
+});
+
+router.delete('/attendance/:id', requirePermission('staff.attendance'), (req, res) => {
+  const deleted = store.delete('attendance', req.params.id);
+  if (!deleted) return res.status(404).json({ error: 'Attendance record not found.' });
+  res.json({ success: true });
+});
+
 router.get('/staff-schedules', requirePermission('staff.schedule'), (req, res) => {
   const from = req.query.from || req.query.date || today();
   const to = req.query.to || from;
@@ -2255,18 +2512,20 @@ router.get('/staff-attendance', requirePermission('staff.attendance'), (req, res
 router.post('/staff-attendance', requirePermission('staff.attendance'), (req, res) => {
   const attendance = store.insert('staff_attendance', {
     staff_id: req.body?.staff_id || '',
+    staff_name: req.body?.staff_name || req.body?.staff_id || '',
     date: req.body?.date || today(),
-    clock_in: req.body?.clock_in || now(),
-    clock_out: req.body?.clock_out || '',
+    clock_in: req.body?.clock_in || req.body?.check_in_time || now(),
+    clock_out: req.body?.clock_out || req.body?.check_out_time || '',
     status: req.body?.status || 'present',
-    notes: req.body?.notes || ''
+    notes: req.body?.notes || req.body?.remarks || '',
+    remarks: req.body?.remarks || req.body?.notes || ''
   });
   res.status(201).json({ attendance });
 });
 
 router.patch('/staff-attendance/:id', requirePermission('staff.attendance'), (req, res) => {
   const updates = {};
-  ['clock_in', 'clock_out', 'status', 'notes'].forEach((key) => {
+  ['staff_name', 'clock_in', 'clock_out', 'status', 'notes', 'remarks'].forEach((key) => {
     if (req.body?.[key] !== undefined) updates[key] = req.body[key];
   });
   const attendance = store.update('staff_attendance', req.params.id, updates);

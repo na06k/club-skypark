@@ -37,6 +37,7 @@ const emptyData = {
   guest_service_charges: [],
   staff_schedules: [],
   staff_attendance: [],
+  attendance: [],
   staff_rosters: [],
   inventory_items: [],
   inventory_movements: [],

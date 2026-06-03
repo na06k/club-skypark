@@ -2,7 +2,8 @@ let checkoutState = {
   activeGuests: [],
   restaurantOrders: [],
   selectedGuestId: '',
-  totals: null
+  totals: null,
+  billGuest: null
 };
 
 function coEscape(value) {
@@ -227,6 +228,8 @@ function renderCheckoutForm(guestId) {
           <label class="field">Room Rent<input id="coRoomRent" type="text" value="${coRs(totals.roomRent)}" readonly></label>
           <label class="field">Food & Other Charges<input id="coFood" type="text" value="${coRs(totals.foodCharges)}" readonly></label>
           <label class="field">GST Amount<input id="coGst" type="text" value="${coRs(totals.gstAmount)}" readonly></label>
+          <label class="field">CGST<input type="text" value="${coRs(totals.gstAmount / 2)}" readonly></label>
+          <label class="field">SGST<input type="text" value="${coRs(totals.gstAmount / 2)}" readonly></label>
         </div>
 
         <div class="checkout-summary">
@@ -239,8 +242,8 @@ function renderCheckoutForm(guestId) {
 
         <div class="checkout-payment-mode">Payment Mode
           <span class="radio-line"><input type="radio" name="coPaymentMode" value="cash" checked> Cash</span>
-          <span class="radio-line"><input type="radio" name="coPaymentMode" value="online"> Online</span>
-          <span class="radio-line"><input type="radio" name="coPaymentMode" value="card"> Card Payment</span>
+          <span class="radio-line"><input type="radio" name="coPaymentMode" value="upi"> UPI</span>
+          <span class="radio-line"><input type="radio" name="coPaymentMode" value="card"> Card</span>
           <span class="radio-line"><input type="radio" name="coPaymentMode" value="credit"> Credit</span>
         </div>
 
@@ -340,8 +343,7 @@ async function loadCheckoutList() {
     <div class="table-actions">${window.pmsCan?.('checkout.create') ? '<button class="green-action" onclick="loadCheckout()">New Check Out</button>' : ''}</div>
     <table class="checkin-report-table"><thead><tr><th>Check-in No</th><th>Name</th><th>Mobile</th><th>Room Details</th><th>Check-in Time</th><th>Check-out Time</th><th>Total Bill</th><th>Paid</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody>${renderCheckoutRows(guests, { actions: (guest) => `
       ${window.pmsCan?.('checkout.print_bill') ? `<button class="green-action" onclick="showCheckoutBillById('${guest.id}')">Print Bill</button>` : ''}
-      ${window.pmsCan?.('checkout.cancel') ? `<button class="red-action" onclick="cancelCheckout('${guest.id}')">Cancel</button>` : ''}
-      ${!window.pmsCan?.('checkout.print_bill') && !window.pmsCan?.('checkout.cancel') ? '-' : ''}
+      ${!window.pmsCan?.('checkout.print_bill') ? '-' : ''}
     ` })}</tbody></table>
   `);
 }
@@ -377,8 +379,29 @@ function billSummaryRow(label, value) {
   return `<tr><th colspan="2">${coEscape(label)}</th><td>${coRs(value)}</td></tr>`;
 }
 
-function showCheckoutBill(guest) {
+function openCheckoutBillWhatsApp() {
+  const guest = checkoutState.billGuest;
+  if (!guest) return;
+  const phone = String(guest.phone || '').replace(/\D/g, '');
+  if (!phone) {
+    alert('Guest mobile number not found.');
+    return;
+  }
+  const number = phone.length === 10 ? `91${phone}` : phone;
+  const amount = coRs(guest.checkout_pay_after_discount || guest.checkout_total_bill_amount || 0);
+  const message = `Hello ${guest.name || 'Guest'},%0A%0AGreetings from Club Skypark.%0AYour hotel bill for Room ${guest.room_number || '-'} is ready.%0ABill Amount: Rs ${amount}%0APayment Mode: ${guest.checkout_payment_mode || '-'}%0A%0ATeam Club Skypark`;
+  window.open(`https://wa.me/${number}?text=${message}`, '_blank');
+}
+
+function printCheckoutBillMode(mode) {
+  if (!checkoutState.billGuest) return;
+  showCheckoutBill(checkoutState.billGuest, mode);
+  setTimeout(() => printCurrentDocument(), 100);
+}
+
+function showCheckoutBill(guest, mode = 'with_food') {
   document.body.classList.remove('dashboard-mode');
+  checkoutState.billGuest = guest;
   const main = document.getElementById('main-content');
   const foodItems = Array.isArray(guest.checkout_food_items) ? guest.checkout_food_items : [];
   const days = Number(guest.days || coDaysBetween(guest.check_in_date, guest.check_out_date));
@@ -387,17 +410,24 @@ function showCheckoutBill(guest) {
   const roomDiscount = coMoney(guest.discount_amount || 0);
   const roomAmount = coMoney(guest.checkout_room_rent || Math.max(0, roomGross - roomDiscount));
   const roomGst = coMoney(guest.checkout_gst_amount || 0);
-  const foodTaxable = coMoney(foodItems.reduce((sum, item) => sum + Number(item.amount || 0), 0));
-  const foodTotal = coMoney(foodItems.reduce((sum, item) => sum + Number(item.total || 0), 0));
+  const includeRoom = mode !== 'food_only';
+  const includeFood = mode !== 'without_food';
+  const printableFoodItems = includeFood ? foodItems : [];
+  const foodTaxable = coMoney(printableFoodItems.reduce((sum, item) => sum + Number(item.amount || 0), 0));
+  const foodTotal = coMoney(printableFoodItems.reduce((sum, item) => sum + Number(item.total || 0), 0));
   const foodGst = coMoney(Math.max(0, foodTotal - foodTaxable));
-  const totalAmount = coMoney(guest.checkout_total_bill_amount || roomAmount + roomGst + foodTotal);
-  const payable = coMoney(guest.checkout_pay_after_discount || guest.checkout_net_payable || totalAmount);
+  const totalAmount = coMoney((includeRoom ? roomAmount + roomGst : 0) + foodTotal);
+  const advance = mode === 'with_food' ? Number(guest.checkout_less_advance || 0) : 0;
+  const discount = mode === 'with_food' ? Number(guest.checkout_discount_amount || 0) : 0;
+  const payable = coMoney(Math.max(0, totalAmount - advance - discount));
   const billNo = 400 + Number(guest.id || 0);
+  const title = mode === 'food_only' ? 'FOOD BILL' : mode === 'without_food' ? 'ROOM BILL WITHOUT FOOD' : 'ROOM BILL WITH FOOD';
 
   main.innerHTML = `
     <section class="document-screen">
       <div class="print-toolbar">
-        ${window.pmsCan?.('checkout.print_bill') ? '<button class="dark-action" onclick="saveCurrentDocumentAsPdf()">Save PDF</button><button class="green-action" onclick="printCurrentDocument()">Print Bill</button>' : ''}
+        ${window.pmsCan?.('checkout.print_bill') ? '<button class="green-action" onclick="printCheckoutBillMode(\'with_food\')">Print bill with food</button><button class="dark-action" onclick="printCheckoutBillMode(\'without_food\')">Print bill without food</button><button class="dark-action" onclick="printCheckoutBillMode(\'food_only\')">Print food bill</button><button class="dark-action" onclick="saveCurrentDocumentAsPdf()">Save PDF</button>' : ''}
+        <button class="green-action" onclick="openCheckoutBillWhatsApp()">WhatsApp Bill</button>
         <button class="dark-action" onclick="loadCheckoutList()">Back to Check Out List</button>
       </div>
       <div class="print-area bill-card">
@@ -407,6 +437,7 @@ function showCheckoutBill(guest) {
             <div class="brand-center"><div class="brand-mark">CLUB SKYPARK</div><small>HOTEL & RESORT</small><p>Manasa Road Neemuch (MP) 458441</p></div>
             <div>info@clubskypark.com<br>www.clubskypark.com</div>
           </div>
+          <h2 class="bill-subtitle" style="text-align:center">${title}</h2>
 
           <div class="bill-info-grid">
             <table class="doc-info-table compact">
@@ -429,7 +460,7 @@ function showCheckoutBill(guest) {
 
           <div class="bill-main-grid">
             <div>
-              <table class="bill-table">
+              ${includeRoom ? `<table class="bill-table">
                 <thead><tr><th>From Date</th><th>To Date</th><th>Room Type</th><th>Room No</th><th>Per Day Price</th><th>Price</th><th>Dis Amount</th><th>Amount</th></tr></thead>
                 <tbody><tr>
                   <td>${coDateTimeDisplay(guest.check_in_date)}</td>
@@ -441,26 +472,26 @@ function showCheckoutBill(guest) {
                   <td>${coRs(roomDiscount)}</td>
                   <td>${coRs(roomAmount)}</td>
                 </tr></tbody>
-              </table>
+              </table>` : ''}
 
-              <h2 class="bill-subtitle">FOOD & OTHER DETAILS</h2>
+              ${includeFood ? `<h2 class="bill-subtitle">FOOD & OTHER DETAILS</h2>
               <table class="bill-table">
                 <thead><tr><th>Item Name</th><th>Item Amount</th><th>Qty</th><th>Amount</th><th>GST %</th><th>Total</th><th>Date</th></tr></thead>
-                <tbody>${billRows(foodItems)}</tbody>
-              </table>
+                <tbody>${billRows(printableFoodItems)}</tbody>
+              </table>` : ''}
             </div>
 
             <table class="bill-summary-table">
               ${billSummaryRow('Total Amount', totalAmount)}
               ${billSummaryRow('Discount Amount', guest.checkout_discount_amount || 0)}
               ${billSummaryRow('Gross Amount', coMoney(totalAmount - Number(guest.checkout_discount_amount || 0)))}
-              ${billSummaryRow('CGST Amount', roomGst / 2)}
-              ${billSummaryRow('SGST Amount', roomGst / 2)}
-              ${billSummaryRow('NET Amount', guest.checkout_net_payable || payable)}
-              ${billSummaryRow('Taxable Room Food', foodTaxable)}
-              ${billSummaryRow('Food CGST Amount', foodGst / 2)}
-              ${billSummaryRow('Food SGST Amount', foodGst / 2)}
-              ${billSummaryRow('Total Room Food', foodTotal)}
+              ${includeRoom ? billSummaryRow('CGST Amount', roomGst / 2) : ''}
+              ${includeRoom ? billSummaryRow('SGST Amount', roomGst / 2) : ''}
+              ${billSummaryRow('NET Amount', totalAmount)}
+              ${includeFood ? billSummaryRow('Taxable Room Food', foodTaxable) : ''}
+              ${includeFood ? billSummaryRow('Food CGST Amount', foodGst / 2) : ''}
+              ${includeFood ? billSummaryRow('Food SGST Amount', foodGst / 2) : ''}
+              ${includeFood ? billSummaryRow('Total Room Food', foodTotal) : ''}
               ${billSummaryRow('Payable Amount', payable)}
             </table>
           </div>
