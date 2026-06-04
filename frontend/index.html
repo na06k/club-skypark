@@ -292,25 +292,31 @@
             .logo { font-size:1.35rem; }
             .nav-links { width:100%; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:0.45rem; }
             .nav-links li { min-width:0; }
-            .nav-links a { display:block; text-align:center; padding:0.55rem 0.35rem; border:1px solid rgba(255,255,255,0.12); border-radius:8px; font-size:0.68rem; letter-spacing:0.04em; }
-            .btn-book { padding:0.55rem 0.35rem !important; border-radius:8px !important; }
+            .nav-links a { display:block; text-align:center; padding:0.7rem 0.35rem; border:1px solid rgba(255,255,255,0.12); border-radius:8px; font-size:0.68rem; letter-spacing:0.04em; }
+            .btn-book { padding:0.7rem 0.35rem !important; border-radius:8px !important; }
             .hero { height:72vh; min-height:560px; }
             .hero-content { width:92%; top:54%; }
             .hero-content h2 { font-size:2.6rem; }
             .hero-content .sub { font-size:1.05rem; letter-spacing:3px; }
             .hero-content .tagline { font-size:0.8rem; letter-spacing:1.8px; margin-bottom:1.6rem; }
-            .hero-btn { padding:0.85rem 1.6rem; }
+            .hero-btn { padding:0.85rem 1.6rem; min-height:48px; display:inline-flex; align-items:center; justify-content:center; }
             .section { padding:3.5rem 0; }
             .container { padding:0 1.2rem; }
             .about-grid, .contact-grid, .form-row { grid-template-columns:1fr; gap:1.5rem; }
             .about-text h2 { font-size:2.1rem; }
             .about-img { height:300px; }
-            .amenities-grid, .rooms-grid, .gallery-grid, .footer-grid { grid-template-columns:1fr; }
+            .amenities-grid, .footer-grid { grid-template-columns:1fr; }
+            .rooms-grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:1rem; }
+            .gallery-grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:0.8rem; }
             .experience-grid { grid-template-columns:1fr; }
             .experience-card:first-child { grid-column:auto; min-height:280px; }
-            .room-img, .gallery-grid img { height:230px; }
+            .room-img { height:180px; }
+            .room-details { padding:1rem; }
+            .room-details h3 { font-size:1.1rem; }
+            .room-price { font-size:1.1rem; }
+            .gallery-grid img { height:160px; }
             .booking-form { padding:1.25rem; border-radius:14px; }
-            .whatsapp-float { width:52px; height:52px; line-height:52px; font-size:24px; right:16px; bottom:16px; }
+            .whatsapp-float { width:52px; height:52px; line-height:52px; font-size:24px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom, 0px)); }
         }
         @media (max-width: 430px) {
             .nav-links { grid-template-columns:repeat(2, minmax(0,1fr)); }
@@ -320,6 +326,8 @@
             .section-subtitle { font-size:0.95rem; }
             .hero-btn, .btn-block { width:100%; text-align:center; }
             .slider-dots { bottom:18px; }
+            .rooms-grid { grid-template-columns:1fr; }
+            .gallery-grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
         }
         /* Minimal mobile header */
         .mobile-nav-toggle { display:none; }
@@ -404,12 +412,12 @@
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Signature Rooms</h2>
         <div class="rooms-grid">
-            <a class="room-card" href="room-booking.html?room=Premium%20Rooms#bookingForm"><div class="room-img"><img src="images/premium.jpg" alt="Premium Rooms"></div><div class="room-details"><h3>Premium Rooms</h3><div class="room-price">Rs 2,499/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
-            <a class="room-card" href="room-booking.html?room=Platinum%20Rooms#bookingForm"><div class="room-img"><img src="images/platinum.jpg" alt="Platinum Rooms"></div><div class="room-details"><h3>Platinum Rooms</h3><div class="room-price">Rs 2,999/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
-            <a class="room-card" href="room-booking.html?room=Club%20Family%20Rooms#bookingForm"><div class="room-img"><img src="images/club-family.jpg" alt="Club Family Rooms"></div><div class="room-details"><h3>Club Family Rooms</h3><div class="room-price">Rs 4,999/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
-            <a class="room-card" href="room-booking.html?room=Family%20Suites#bookingForm"><div class="room-img"><img src="images/familysuite.jpg" alt="Family Suites"></div><div class="room-details"><h3>Family Suites</h3><div class="room-price">Rs 5,499/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
-            <a class="room-card" href="room-booking.html?room=Executive%20Suites#bookingForm"><div class="room-img"><img src="images/executive.jpg" alt="Executive Suites"></div><div class="room-details"><h3>Executive Suites</h3><div class="room-price">Rs 5,499/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
-            <a class="room-card" href="room-booking.html?room=Presidential%20Suite#bookingForm"><div class="room-img"><img src="images/presidentual.jpg" alt="Presidential Suite"></div><div class="room-details"><h3>Presidential Suite</h3><div class="room-price">Rs 7,499/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
+            <a class="room-card" href="room-booking.html?room=Premium%20Rooms#bookingForm"><div class="room-img"><img src="images/premium.jpg" alt="Premium Rooms" loading="lazy"></div><div class="room-details"><h3>Premium Rooms</h3><div class="room-price">Rs 2,499/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
+            <a class="room-card" href="room-booking.html?room=Platinum%20Rooms#bookingForm"><div class="room-img"><img src="images/platinum.jpg" alt="Platinum Rooms" loading="lazy"></div><div class="room-details"><h3>Platinum Rooms</h3><div class="room-price">Rs 2,999/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
+            <a class="room-card" href="room-booking.html?room=Club%20Family%20Rooms#bookingForm"><div class="room-img"><img src="images/club-family.jpg" alt="Club Family Rooms" loading="lazy"></div><div class="room-details"><h3>Club Family Rooms</h3><div class="room-price">Rs 4,999/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
+            <a class="room-card" href="room-booking.html?room=Family%20Suites#bookingForm"><div class="room-img"><img src="images/familysuite.jpg" alt="Family Suites" loading="lazy"></div><div class="room-details"><h3>Family Suites</h3><div class="room-price">Rs 5,499/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
+            <a class="room-card" href="room-booking.html?room=Executive%20Suites#bookingForm"><div class="room-img"><img src="images/executive.jpg" alt="Executive Suites" loading="lazy"></div><div class="room-details"><h3>Executive Suites</h3><div class="room-price">Rs 5,499/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
+            <a class="room-card" href="room-booking.html?room=Presidential%20Suite#bookingForm"><div class="room-img"><img src="images/presidentual.jpg" alt="Presidential Suite" loading="lazy"></div><div class="room-details"><h3>Presidential Suite</h3><div class="room-price">Rs 7,499/night</div><span class="btn-sm">VIEW & BOOK</span></div></a>
         </div>
     </div>
 </section>
@@ -419,14 +427,14 @@
     <div class="container">
         <div class="gold-line"></div><h2 class="section-title">Photo Gallery</h2>
         <div class="gallery-grid">
-            <img src="images/Club_SkyPark_Hotel_Exterior_Day_Cleaned.jpg" alt="Club Skypark exterior">
-            <img src="images/Club_SkyPark_Reception_Lobby_Cleaned.jpg" alt="Reception desk">
-            <img src="images/Club_SkyPark_Lounge_Area_Cleaned.jpg" alt="Reception sitting area">
-            <img src="images/Club_SkyPark_Lobby_Lounge_High_Resolution (2).jpg" alt="Lobby lounge">
-            <img src="images/club_skypark_high_resolution_2.jpg" alt="Swimming pool">
-            <img src="images/gym1.jpg" alt="Gym">
-            <img src="images/djhall.jpg" alt="DJ hall">
-            <img src="images/Club_SkyPark_Banquet_Hall_High_Resolution.jpg" alt="Banquet hall">
+            <img src="images/Club_SkyPark_Hotel_Exterior_Day_Cleaned.jpg" alt="Club Skypark exterior" loading="lazy">
+            <img src="images/Club_SkyPark_Reception_Lobby_Cleaned.jpg" alt="Reception desk" loading="lazy">
+            <img src="images/Club_SkyPark_Lounge_Area_Cleaned.jpg" alt="Reception sitting area" loading="lazy">
+            <img src="images/Club_SkyPark_Lobby_Lounge_High_Resolution (2).jpg" alt="Lobby lounge" loading="lazy">
+            <img src="images/club_skypark_high_resolution_2.jpg" alt="Swimming pool" loading="lazy">
+            <img src="images/gym1.jpg" alt="Gym" loading="lazy">
+            <img src="images/djhall.jpg" alt="DJ hall" loading="lazy">
+            <img src="images/Club_SkyPark_Banquet_Hall_High_Resolution.jpg" alt="Banquet hall" loading="lazy">
         </div>
     </div>
 </section>
@@ -501,14 +509,40 @@ function goToSlide(i) {
 setInterval(() => goToSlide(currentSlide + 1), 5000);
 goToSlide(0);
 
+// Touch swipe for hero slider
+(function() {
+    const hero = document.querySelector('.hero');
+    let sx = 0;
+    hero.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    hero.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - sx;
+        if (Math.abs(dx) > 50) goToSlide(currentSlide + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+})();
+
 // TESTIMONIALS SLIDER
 const track = document.getElementById('testimonialTrack');
 const tCards = document.querySelectorAll('.testimonial-card');
 let tIdx = 0;
-setInterval(() => {
+const autoT = setInterval(nextTestimonial, 5000);
+function nextTestimonial() {
     tIdx = (tIdx + 1) % tCards.length;
     track.style.transform = `translateX(-${tIdx * 100}%)`;
-}, 5000);
+}
+
+// Touch swipe for testimonials
+(function() {
+    let sx = 0;
+    track.parentElement.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    track.parentElement.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - sx;
+        if (Math.abs(dx) > 40) {
+            clearInterval(autoT);
+            tIdx = (tIdx + (dx < 0 ? 1 : -1) + tCards.length) % tCards.length;
+            track.style.transform = `translateX(-${tIdx * 100}%)`;
+        }
+    }, { passive: true });
+})();
 
 // SMOOTH SCROLL for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(link => {
