@@ -30,7 +30,8 @@ indexes do not apply here (they will matter when the payment code is merged in).
 | 19 | Git hygiene | repo root | Backup folders committed (`backup-before-*`), no pre-commit secret scanner. | Low | TODO |
 | 20 | Double booking | routes.js:338-349 | Room availability is not checked for date overlap when a public booking is created (only on auto check-in). | Low (bookings start as `pending`, staff confirms) | TODO |
 | 21 | Auth | middleware.js | Token in sessionStorage (XSS-sensitive); no logout-everywhere. Mitigated by #2. | Low | TODO |
-| 22 | Razorpay / SQLite | — | Not present in this repo. Must be re-audited when merged. | Info | N/A |
+| 22 | Headers | app.js | No Content-Security-Policy: the pages use inline scripts/handlers, so a strict CSP would change how pages work. Needs a careful, separate pass. | Low | TODO |
+| 23 | Razorpay / SQLite | — | Not present in this repo. Must be re-audited when merged. | Info | N/A |
 
 ## Frontend secrets check
 No API keys or secrets found in tracked files or git history. `.env` is git-ignored.
