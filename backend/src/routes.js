@@ -170,12 +170,63 @@ const roomSchema = z.object({
   status: z.enum(['vacant', 'occupied', 'reserved', 'dirty', 'maintenance']).default('vacant')
 });
 
-const documentSchema = z.object({
-  document_type: z.string().min(1),
-  file_name: z.string().min(1),
-  mime_type: z.string().min(1),
+// Text typed by public visitors is untrusted: strip angle brackets and control characters, trim, cap length.
+const cleanText = (value) => String(value ?? '').replace(/[<>]/g, '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
+const publicText = (min, max) => z.string().transform(cleanText).pipe(z.string().min(min).max(max));
+const optionalPublicText = (max) => z.string().optional().nullable().default('').transform((value) => cleanText(value)).pipe(z.string().max(max));
+
+const ALLOWED_DOCUMENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024;
+const safeFileName = (value) => String(value || 'document').replace(/[^A-Za-z0-9._ -]/g, '_').slice(0, 120) || 'document';
+
+const documentBase = z.object({
+  document_type: z.string().min(1).max(60).transform(cleanText),
+  file_name: z.string().min(1).max(200).transform(safeFileName),
+  mime_type: z.string().min(1).refine((value) => ALLOWED_DOCUMENT_TYPES.includes(value.toLowerCase()), 'Only PDF, JPG, PNG or WEBP files are allowed.').transform((value) => value.toLowerCase()),
   data_url: z.string().min(20)
 });
+const documentSizeOk = (doc) => {
+  const base64 = doc.data_url.includes(',') ? doc.data_url.split(',')[1] : doc.data_url;
+  return Math.floor(base64.length * 3 / 4) <= MAX_DOCUMENT_BYTES;
+};
+const documentSchema = documentBase.refine(documentSizeOk, 'File is too large (maximum 8 MB).');
+
+const publicBookingSchema = z.object({
+  guest_name: publicText(2, 80),
+  guest_email: z.string().trim().toLowerCase().email().max(120),
+  guest_phone: z.string().trim().regex(/^[0-9+\-()\s]{6,20}$/, 'Invalid phone number.'),
+  room_name: publicText(1, 60),
+  booking_type: z.enum(['room', 'event', 'wedding', 'birthday', 'party', 'other']).default('room'),
+  event_type: optionalPublicText(120),
+  purpose: optionalPublicText(200),
+  guests: z.coerce.number().int().min(1).max(20).default(1),
+  check_in: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  check_out: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  estimated_checkin_time: z.string().max(20).optional().default('').transform(cleanText)
+});
+
+// Fallback list prices (same as the public booking form) used only if no matching room category exists in the database.
+const PUBLIC_ROOM_FALLBACK_PRICES = {
+  premiumroom: 2499,
+  platinumroom: 2999,
+  clubfamilyroom: 4999,
+  familysuite: 5499,
+  executivesuite: 5499,
+  presidentialsuite: 7499
+};
+const MAX_PUBLIC_NIGHTS = 30;
+
+const categoryKey = (name) => String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '').replace(/s$/, '');
+
+// The server decides the price. The browser's total is never trusted.
+function publicRoomPrice(data, roomName) {
+  const key = categoryKey(roomName);
+  const prices = data.rooms
+    .filter((room) => categoryKey(room.room_type) === key && Number(room.price) > 0)
+    .map((room) => Number(room.price));
+  if (prices.length) return Math.min(...prices);
+  return PUBLIC_ROOM_FALLBACK_PRICES[key] || null;
+}
 
 const itemSchema = z.object({
   item_type: z.enum(['restaurant', 'store']),
@@ -233,6 +284,12 @@ function can(req, permission) {
 
 function forbidden(res) {
   return res.status(403).json({ error: 'You do not have permission for this action.' });
+}
+
+// A non-super-admin can only give out permissions they hold themselves (no self-escalation).
+function canGrantPermissions(user, permissions) {
+  if (!Array.isArray(permissions) || user.role === 'super_admin') return true;
+  return permissions.every((permission) => hasPermission(user, permission));
 }
 
 function withRoom(booking) {
@@ -497,12 +554,17 @@ router.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'club-skypark-backend' });
 });
 
+// Used so a wrong email takes as long as a wrong password (no user enumeration by response time).
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync('not-a-real-password', 10);
+
 router.post('/auth/login', (req, res) => {
-  const parsed = z.object({ email: z.string().email(), password: z.string().min(1) }).safeParse(req.body);
+  const parsed = z.object({ email: z.string().email().max(120), password: z.string().min(1).max(200) }).safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Email and password are required.' });
 
-  const staff = store.find('staff', (item) => item.email === parsed.data.email);
-  if (!staff || !bcrypt.compareSync(parsed.data.password, staff.password_hash)) {
+  const email = parsed.data.email.trim().toLowerCase();
+  const staff = store.find('staff', (item) => String(item.email || '').trim().toLowerCase() === email);
+  const passwordOk = bcrypt.compareSync(parsed.data.password, staff ? staff.password_hash : DUMMY_PASSWORD_HASH);
+  if (!staff || !passwordOk) {
     return res.status(401).json({ error: 'Invalid email or password.' });
   }
 
@@ -515,35 +577,51 @@ router.get('/auth/me', requireAuth, (req, res) => {
   res.json({ user: req.user });
 });
 
+// Public view: category + price + Available/Sold Out only. Never room numbers, counts or internal status. Read-only.
 router.get('/public/rooms', (req, res) => {
-  const rooms = store.transaction((data) => {
-    runReservationAutomation(data);
-    return data.rooms.sort((a, b) => Number(b.price) - Number(a.price));
+  const categories = new Map();
+  store.all('rooms').forEach((room) => {
+    const key = categoryKey(room.room_type);
+    const entry = categories.get(key) || { room_type: room.room_type, price: Number(room.price) || 0, available: false };
+    if (Number(room.price) > 0 && (entry.price === 0 || Number(room.price) < entry.price)) entry.price = Number(room.price);
+    if (!isRoomUnavailable(room) && room.status !== 'reserved') entry.available = true;
+    categories.set(key, entry);
   });
+  const rooms = [...categories.values()]
+    .sort((a, b) => b.price - a.price)
+    .map((entry) => ({ room_type: entry.room_type, price: entry.price, availability: entry.available ? 'Available' : 'Sold Out' }));
   res.json({ rooms });
 });
 
 router.post('/public/bookings', async (req, res) => {
-  const parsed = bookingSchema.safeParse(req.body);
+  const parsed = publicBookingSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Please complete all booking details correctly.' });
 
-  const totalPrice = money(parsed.data.total_price);
-  const paidAmount = 0;
-  const balanceAmount = totalPrice;
-  const paymentStatus = 'due';
+  const input = parsed.data;
+  const todayValue = today();
+  const nights = Math.round((new Date(`${input.check_out}T00:00:00`) - new Date(`${input.check_in}T00:00:00`)) / 86400000);
+  if (Number.isNaN(nights) || input.check_in < todayValue || nights < 1 || nights > MAX_PUBLIC_NIGHTS) {
+    return res.status(400).json({ error: 'Please choose valid check-in and check-out dates.' });
+  }
 
   const result = store.transaction((data) => {
+    let totalPrice = 0;
+    if (input.booking_type === 'room') {
+      const nightlyPrice = publicRoomPrice(data, input.room_name);
+      if (!nightlyPrice) return { error: 'Selected room category is not available for online booking.' };
+      totalPrice = money(nightlyPrice * nights);
+    }
     const booking = {
       id: nextId(data.bookings),
-      ...parsed.data,
-      room_id: parsed.data.room_id ? String(parsed.data.room_id) : null,
+      ...input,
+      room_id: null,
       total_price: totalPrice,
-      paid_amount: paidAmount,
-      balance_amount: balanceAmount,
+      paid_amount: 0,
+      balance_amount: totalPrice,
       payment_method: 'pay_at_hotel',
       payment_reference: '',
       payment_notes: 'Payment due at hotel',
-      payment_status: paymentStatus,
+      payment_status: 'due',
       auto_checkin_enabled: true,
       no_id_required: false,
       grc_required: true,
@@ -553,32 +631,36 @@ router.post('/public/bookings', async (req, res) => {
     data.bookings.push(booking);
     return { booking, payment: null };
   });
+  if (result.error) return res.status(400).json({ error: result.error });
 
   let whatsapp = null;
   try {
     whatsapp = await sendBookingWhatsAppConfirmation(result.booking);
   } catch (error) {
     console.error('WhatsApp booking confirmation failed:', error);
-    whatsapp = { status: 'failed', error: error.message || 'WhatsApp confirmation failed.' };
+    whatsapp = { status: 'failed', error: 'WhatsApp confirmation could not be sent.' };
   }
 
   res.status(201).json({ ...result, whatsapp });
 });
 
 router.post('/public/enquiries', (req, res) => {
-  const { name, phone, email, type, message } = req.body || {};
-  if (!name || !String(name).trim()) {
-    return res.status(400).json({ error: 'Name is required.' });
-  }
-  if (!phone || !String(phone).trim()) {
-    return res.status(400).json({ error: 'Phone number is required.' });
-  }
+  const parsed = z.object({
+    name: publicText(1, 80),
+    phone: z.string().trim().regex(/^[0-9+\-()\s]{6,20}$/, 'Invalid phone number.'),
+    email: z.string().trim().max(120).optional().nullable().default('').refine((value) => !value || z.string().email().safeParse(value).success, 'Invalid email.'),
+    type: optionalPublicText(60),
+    message: optionalPublicText(1000)
+  }).safeParse(req.body || {});
+  if (!parsed.success) return res.status(400).json({ error: 'Please enter a valid name and phone number.' });
+
+  const { name, phone, email, type, message } = parsed.data;
   const enquiry = store.insert('enquiries', {
-    name: String(name).trim(),
-    phone: String(phone).trim(),
-    email: String(email || '').trim(),
-    type: String(type || 'General').trim(),
-    message: String(message || '').trim(),
+    name,
+    phone,
+    email: email || '',
+    type: type || 'General',
+    message,
     status: 'new'
   });
   return res.status(201).json({ success: true, enquiry });
@@ -1344,7 +1426,7 @@ router.get('/guests/:id/documents', requirePermission('documents.view'), (req, r
 });
 
 router.post('/guest-documents', requirePermission('documents.upload'), (req, res) => {
-  const parsed = documentSchema.extend({ guest_id: z.coerce.number().int().positive() }).safeParse(req.body);
+  const parsed = documentBase.extend({ guest_id: z.coerce.number().int().positive() }).refine(documentSizeOk, 'File is too large (maximum 8 MB).').safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid document details.' });
   const guest = store.find('guests', (item) => String(item.id) === String(parsed.data.guest_id));
   if (!guest) return res.status(404).json({ error: 'Guest not found.' });
@@ -1357,8 +1439,11 @@ router.get('/guest-documents/:id/download', requirePermission('documents.downloa
   const doc = store.find('guest_documents', (item) => String(item.id) === String(req.params.id));
   if (!doc) return res.status(404).json({ error: 'Document not found.' });
   const base64 = doc.data_url.includes(',') ? doc.data_url.split(',')[1] : doc.data_url;
-  res.setHeader('Content-Type', doc.mime_type);
-  res.setHeader('Content-Disposition', `attachment; filename="${doc.file_name}"`);
+  // Older uploads may carry any type/name: only serve allow-listed types, always as a download, never sniffed.
+  const mimeType = ALLOWED_DOCUMENT_TYPES.includes(String(doc.mime_type || '').toLowerCase()) ? doc.mime_type.toLowerCase() : 'application/octet-stream';
+  res.setHeader('Content-Type', mimeType);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Disposition', `attachment; filename="${safeFileName(doc.file_name)}"`);
   res.send(Buffer.from(base64, 'base64'));
 });
 
@@ -1849,7 +1934,11 @@ router.post('/staff', requirePermission('staff.create'), (req, res) => {
   }).safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid staff details.' });
 
-  const exists = store.find('staff', (staff) => staff.email === parsed.data.email);
+  // Only a super admin may create another super admin, and nobody can hand out permissions they do not have.
+  if (parsed.data.role === 'super_admin' && req.user.role !== 'super_admin') return forbidden(res);
+  if (!canGrantPermissions(req.user, parsed.data.permissions)) return forbidden(res);
+
+  const exists = store.find('staff', (staff) => String(staff.email || '').toLowerCase() === parsed.data.email.toLowerCase());
   if (exists) return res.status(409).json({ error: 'Staff email already exists.' });
 
   const staff = store.insert('staff', {
@@ -1876,6 +1965,19 @@ router.patch('/staff/:id', requireAnyPermission('staff.edit', 'staff.permissions
   if (!current) return res.status(404).json({ error: 'Staff member not found.' });
   if (parsed.data.permissions && !can(req, 'staff.permissions')) return forbidden(res);
   if ((parsed.data.name || parsed.data.email || parsed.data.password || parsed.data.role) && !can(req, 'staff.edit')) return forbidden(res);
+
+  // Super admin accounts are protected: only another super admin can edit them or promote someone to that role.
+  if (current.role === 'super_admin' && req.user.role !== 'super_admin') return forbidden(res);
+  if (parsed.data.role === 'super_admin' && req.user.role !== 'super_admin') return forbidden(res);
+  if (!canGrantPermissions(req.user, parsed.data.permissions)) return forbidden(res);
+  if (current.role === 'super_admin' && parsed.data.role && parsed.data.role !== 'super_admin') {
+    const superAdmins = store.all('staff').filter((staff) => staff.role === 'super_admin').length;
+    if (superAdmins <= 1) return res.status(400).json({ error: 'You cannot demote the last super admin.' });
+  }
+  if (parsed.data.email) {
+    const taken = store.find('staff', (staff) => String(staff.id) !== String(current.id) && String(staff.email || '').toLowerCase() === parsed.data.email.toLowerCase());
+    if (taken) return res.status(409).json({ error: 'Staff email already exists.' });
+  }
 
   const nextRole = parsed.data.role || current.role;
   const changes = {};

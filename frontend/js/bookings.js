@@ -98,7 +98,7 @@ async function loadBookings() {
             <tbody>`;
     bookings.forEach((b) => {
       html += `<tr>
-        <td>${b.guest_name}<br>${b.guest_email}<br>${b.guest_phone || ''}</td>
+        <td>${escapeHtml(b.guest_name)}<br>${escapeHtml(b.guest_email)}<br>${escapeHtml(b.guest_phone || '')}</td>
         <td>${bookingRoomName(b)}</td>
         <td>${bookingDateDisplay(b.check_in)} to ${bookingDateDisplay(b.check_out)}</td>
         <td>${b.estimated_checkin_time || '-'}</td>

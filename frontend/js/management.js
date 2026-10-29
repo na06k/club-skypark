@@ -499,8 +499,8 @@ async function loadReservations() {
       </div>
       <table><tr><th>Guest</th><th>Room / Category</th><th>Dates</th><th>ETA</th><th>Group</th><th>Total</th><th>Status</th><th>Action</th></tr>
         ${tableOrEmpty(reservations.map((r) => `<tr>
-          <td>${r.guest_name}<br>${r.guest_phone}</td>
-          <td>${r.room_number ? `${r.room_number} (${r.room_type || r.room_name || '-'})` : (r.room_name || '-')}</td>
+          <td>${escapeHtml(r.guest_name)}<br>${escapeHtml(r.guest_phone)}</td>
+          <td>${r.room_number ? `${escapeHtml(r.room_number)} (${escapeHtml(r.room_type || r.room_name || '-')})` : escapeHtml(r.room_name || '-')}</td>
           <td>${displayDate(r.check_in)} to ${displayDate(r.check_out)}</td>
           <td>${r.estimated_checkin_time || '-'}</td>
           <td>${r.bulk_group_id || '-'}</td>

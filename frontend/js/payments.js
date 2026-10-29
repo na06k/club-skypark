@@ -7,7 +7,7 @@ async function loadPayments() {
       <table>
         <tr><th>Booking</th><th>Amount</th><th>Method</th><th>Status</th></tr>
         ${payments.map((p) => `<tr>
-          <td>${p.guest_name || '-'}</td>
+          <td>${escapeHtml(p.guest_name || '-')}</td>
           <td>Rs ${Number(p.amount).toLocaleString()}</td>
           <td>${p.method}</td>
           <td>${p.status}</td>
