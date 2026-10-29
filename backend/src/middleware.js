@@ -5,7 +5,10 @@ const { hasAnyPermission, hasPermission, normalizeStaffPermissions } = require('
 const jwtSecret = () => {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret === 'change-this-secret-before-production') {
-    console.warn('\x1b[33mWARNING: JWT_SECRET is not set in .env - using default. Change before going live.\x1b[0m');
+    // Production startup already refuses this (see config.js). Never fall back to a known secret there.
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET is not configured.');
+    }
     return 'change-this-secret-before-production';
   }
   return secret;
@@ -20,14 +23,14 @@ function requireAuth(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, jwtSecret());
+    const decoded = jwt.verify(token, jwtSecret(), { algorithms: ['HS256'] });
+    // The staff record in the database is the source of truth. A deleted/unknown account must lose access immediately.
     const freshStaff = decoded.id ? store.find('staff', (staff) => String(staff.id) === String(decoded.id)) : null;
-    if (freshStaff) {
-      const { password_hash, ...safeStaff } = freshStaff;
-      req.user = normalizeStaffPermissions(safeStaff);
-    } else {
-      req.user = normalizeStaffPermissions(decoded);
+    if (!freshStaff) {
+      return res.status(401).json({ error: 'Invalid or expired session.' });
     }
+    const { password_hash, ...safeStaff } = freshStaff;
+    req.user = normalizeStaffPermissions(safeStaff);
     return next();
   } catch (error) {
     return res.status(401).json({ error: 'Invalid or expired session.' });

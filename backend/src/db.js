@@ -3,8 +3,17 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const { normalizePermissions } = require('./permissions');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const dataFile = path.join(dataDir, 'club-skypark.json');
+const dataFile = process.env.DATA_FILE
+  ? path.resolve(process.env.DATA_FILE)
+  : path.join(__dirname, '..', 'data', 'club-skypark.json');
+const dataDir = path.dirname(dataFile);
+
+// Atomic write: a crash mid-write can no longer leave a half-written (corrupt) data file.
+function atomicWrite(contents) {
+  const tempFile = `${dataFile}.${process.pid}.tmp`;
+  fs.writeFileSync(tempFile, contents);
+  fs.renameSync(tempFile, dataFile);
+}
 
 const emptyData = {
   staff: [],
@@ -73,14 +82,14 @@ function readData() {
 }
 
 function writeData(data) {
-  fs.writeFileSync(dataFile, JSON.stringify(data, null, 2));
+  atomicWrite(JSON.stringify(data, null, 2));
 }
 
 function writeDataIfChanged(data) {
   const next = JSON.stringify(data, null, 2);
   const current = fs.existsSync(dataFile) ? fs.readFileSync(dataFile, 'utf8') : '';
   if (current !== next) {
-    fs.writeFileSync(dataFile, next);
+    atomicWrite(next);
   }
 }
 
@@ -208,4 +217,13 @@ const store = {
   }
 };
 
-module.exports = { store, initDb, now, today, nextId };
+function existingStaffCount() {
+  if (!fs.existsSync(dataFile)) return 0;
+  try {
+    return (readData().staff || []).length;
+  } catch (error) {
+    return 0;
+  }
+}
+
+module.exports = { store, initDb, now, today, nextId, existingStaffCount, dataFile };

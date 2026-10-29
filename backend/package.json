@@ -5,7 +5,10 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon --ignore data src/server.js"
+    "dev": "nodemon --ignore data src/server.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "backup": "node scripts/backup.js",
+    "restore": "node scripts/restore.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -25,5 +28,8 @@
       "data/*",
       "data/**"
     ]
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

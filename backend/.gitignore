@@ -4,3 +4,4 @@ data/*.sqlite-shm
 data/*.sqlite-wal
 .env
 data/*.json
+backups/
